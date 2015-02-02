@@ -1,5 +1,7 @@
 package savemycheese;
 
+import view.WelcomeView;
+
 /**
  *
  * @author Samil Korkmaz
@@ -9,7 +11,7 @@ package savemycheese;
 public class Main {
 
     public static void main(String[] args) {
-        // TODO code application logic here
+        WelcomeView.createAndShowGUI();
     }
     
 }
