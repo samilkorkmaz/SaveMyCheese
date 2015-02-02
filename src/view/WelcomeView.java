@@ -1,6 +1,7 @@
 package view;
 
 import java.awt.Dimension;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
@@ -61,15 +62,22 @@ public class WelcomeView extends JPanel {
         jbStart.setFont(BUTTON_FONT);
         jbAbout.setFont(BUTTON_FONT);
         jbExit.setFont(BUTTON_FONT);
-        
+           
         jbStart.addActionListener((java.awt.event.ActionEvent evt) -> {
+            makeVisible(false);
             GameView.createAndShowGUI();
         });
         jbAbout.addActionListener((java.awt.event.ActionEvent evt) -> {
+            makeVisible(false);
             AboutView.createAndShowGUI();
         });
         jbExit.addActionListener((java.awt.event.ActionEvent evt) -> {
             frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
         });
+    }
+   
+  
+    public static void makeVisible(boolean isVisible) {
+        frame.setVisible(isVisible);
     }
 }
