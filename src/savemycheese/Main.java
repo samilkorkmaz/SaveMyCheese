@@ -1,5 +1,6 @@
 package savemycheese;
 
+import controller.GameController;
 import view.WelcomeView;
 
 /**
@@ -11,6 +12,7 @@ import view.WelcomeView;
 public class Main {
 
     public static void main(String[] args) {
+        GameController.init();
         WelcomeView.createAndShowGUI();
     }
     
