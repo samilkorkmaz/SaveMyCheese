@@ -63,7 +63,6 @@ public class WelcomeView extends JPanel {
         jbExit.setFont(BUTTON_FONT);
         
         jbStart.addActionListener((java.awt.event.ActionEvent evt) -> {
-            System.out.println("start");
             GameView.createAndShowGUI();
         });
         jbAbout.addActionListener((java.awt.event.ActionEvent evt) -> {
