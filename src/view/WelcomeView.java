@@ -1,6 +1,7 @@
 package view;
 
 import java.awt.Dimension;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -69,7 +70,7 @@ public class WelcomeView extends JPanel {
             AboutView.createAndShowGUI();
         });
         jbExit.addActionListener((java.awt.event.ActionEvent evt) -> {
-            System.out.println("exit");
+            frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
         });
     }
 }
