@@ -65,7 +65,19 @@ public class AboutView extends JPanel {
         jbBack.setFont(BUTTON_FONT);
 
         jbBack.addActionListener((java.awt.event.ActionEvent evt) -> {
-            frame.setVisible(false);
+            makeVisible(false);
+            WelcomeView.makeVisible(true);
         });
+        
+        frame.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                WelcomeView.makeVisible(true);
+            }
+        });
+    }
+    
+    public static void makeVisible(boolean isVisible) {
+        frame.setVisible(isVisible);
     }
 }
