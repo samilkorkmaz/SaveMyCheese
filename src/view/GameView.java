@@ -35,9 +35,9 @@ public class GameView extends JPanel {
     private static final JPanel jpCanvas = new CanvasPanel();
     private static final JPanel jpButtons = new JPanel();
     private static final java.awt.Font BUTTON_FONT = new java.awt.Font("Tahoma", 1, 12);
-    private static final java.awt.Font LEVEL_SUCCESS_FONT = new java.awt.Font("Tahoma", 1, 12);
-    private static final String SUCCESS_TEXT = "Level completed successfully";
-    private static final JLabel jlSuccess = new JLabel();
+    private static final java.awt.Font LEVEL_SUCCESS_FONT = new java.awt.Font("Tahoma", 1, 24);
+    private static final String SUCCESS_TEXT = "Level completed successfully!";
+    private static final JLabel jlSuccessFail = new JLabel();
 
     @Override
     public Dimension getPreferredSize() {
@@ -64,6 +64,12 @@ public class GameView extends JPanel {
     private GameView() {
         setLayout(null);
         jpCanvas.setLayout(null);
+        jpCanvas.setBackground(Color.GREEN);
+        jpCanvas.add(jlSuccessFail);
+        jlSuccessFail.setBounds(10, 10, 450, 50);
+        jlSuccessFail.setFont(LEVEL_SUCCESS_FONT);
+        jlSuccessFail.setForeground(Color.BLUE);
+        
         add(jpCanvas);
         add(jpButtons);
 
@@ -90,7 +96,7 @@ public class GameView extends JPanel {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 GameController.start();
-                jlSuccess.setText("");
+                jlSuccessFail.setText("");
                 jpCanvas.repaint();
             }
         });
@@ -119,13 +125,8 @@ public class GameView extends JPanel {
         frame.setVisible(isVisible);
     }
 
-    public static void setLevelSuccess() {
-        jpCanvas.add(jlSuccess);
-        jlSuccess.setBounds(10, 10, 150, 50);
-        jlSuccess.setText(SUCCESS_TEXT);
-        jlSuccess.setFont(LEVEL_SUCCESS_FONT);
-        jlSuccess.setForeground(Color.BLUE);
-        jlSuccess.setBounds(10, 10, 200, 50);        
+    public static void setLevelSuccess() {        
+        jlSuccessFail.setText(SUCCESS_TEXT);
         jbNext.setEnabled(true);
     }
 }
