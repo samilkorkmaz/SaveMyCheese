@@ -68,18 +68,19 @@ public class GameView extends JPanel {
         jlSuccessFail.setBounds(10, 10, 450, 50);
         jlSuccessFail.setFont(LEVEL_SUCCESS_FONT);
         jlSuccessFail.setForeground(Color.BLUE);
-        
+
         add(jpCanvas);
         add(jpButtons);
 
-        jpButtons.setBounds((int) getPreferredSize().getWidth() - (BUTTON_PANEL_WIDTH + 10), 10, BUTTON_PANEL_WIDTH, 100);
         jpCanvas.setBounds(0, 0, (int) getPreferredSize().getWidth() - (BUTTON_PANEL_WIDTH + 10), (int) getPreferredSize().getHeight());
 
-        jpButtons.setLayout(new java.awt.GridLayout(4, 0));
         jpButtons.add(jbStartPause);
         jpButtons.add(jbRestart);
         jpButtons.add(jbNext);
         jpButtons.add(jbBack);
+        jpButtons.setLayout(new java.awt.GridLayout(jpButtons.getComponentCount(), 0));
+        jpButtons.setBounds((int) getPreferredSize().getWidth() - (BUTTON_PANEL_WIDTH + 10), 10, BUTTON_PANEL_WIDTH, 
+                25 * jpButtons.getComponentCount());
 
         jbStartPause.setFont(BUTTON_FONT);
         jbRestart.setFont(BUTTON_FONT);
@@ -95,12 +96,13 @@ public class GameView extends JPanel {
             GameController.start();
             jlSuccessFail.setText("");
             jpCanvas.repaint();
+            jbNext.setEnabled(false);
         });
-        
+
         jbNext.addActionListener((java.awt.event.ActionEvent evt) -> {
             System.out.println("next");
         });
-        
+
         jbBack.addActionListener((ActionEvent ae) -> {
             makeVisible(false);
             WelcomeView.makeVisible(true);
@@ -118,7 +120,7 @@ public class GameView extends JPanel {
         frame.setVisible(isVisible);
     }
 
-    public static void setLevelSuccess() {        
+    public static void setLevelSuccess() {
         jlSuccessFail.setText(SUCCESS_TEXT);
         jbNext.setEnabled(true);
     }
