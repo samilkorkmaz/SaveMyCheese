@@ -4,6 +4,7 @@ import java.awt.Point;
 import java.util.List;
 import java.util.ArrayList;
 import model.MyPolygon;
+import view.GameView;
 
 /**
  * Game controller.
@@ -18,6 +19,7 @@ public class GameController {
     private static MyPolygon selectedSnapPolygon = null;
     private static int prevMouseX;
     private static int prevMouseY;
+    private static boolean isAllSnapped;
 
     public static void toggleSelectedShape() {
         if (selectedPolygon != null) {
@@ -47,6 +49,23 @@ public class GameController {
             }
         }
     }
+    
+    public static boolean isAllSnapped() {
+        return isAllSnapped;
+    }
+
+    private static void checkAllSnapped() {
+        isAllSnapped = true;
+        for (MyPolygon myPolygon : polygonList) {
+            if (!myPolygon.isSnapped()) {
+                isAllSnapped = false;
+                break;
+            }
+        }  
+        if (isAllSnapped) {
+            GameView.setLevelSuccess();
+        }
+    }
 
     public static void moveShape(int mouseX, int mouseY) {
         if (selectedPolygon != null && !selectedPolygon.isSnapped()) {
@@ -54,7 +73,7 @@ public class GameController {
             prevMouseX = mouseX;
             prevMouseY = mouseY;
             selectedPolygon.setIsSnapped(selectedPolygon.isCloseTo(selectedSnapPolygon));
-
+            checkAllSnapped();
         } else {
             selectedPolygon = null;
             selectedSnapPolygon = null;
@@ -77,11 +96,11 @@ public class GameController {
             int[] xCoords = {0, 60, 120, 100, 20};
             int[] yCoords = {50, 0, 50, 125, 125};
             MyPolygon myPolygon = new MyPolygon(xCoords, yCoords, xCoords.length);
-            myPolygon.translate(i*50, i*50);
+            myPolygon.translate(i * 50, i * 50);
             polygonList.add(myPolygon);
 
             MyPolygon snapPolygon = new MyPolygon(xCoords, yCoords, xCoords.length);
-            snapPolygon.translate(200 + i*50, 20 + i*50);
+            snapPolygon.translate(200 + i * 50, 20 + i * 50);
             snapPolygonList.add(snapPolygon);
         }
     }
