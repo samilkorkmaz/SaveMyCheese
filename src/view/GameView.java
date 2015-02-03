@@ -1,5 +1,6 @@
 package view;
 
+import controller.GameController;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -28,12 +29,14 @@ public class GameView extends JPanel {
     private static GameView instance;
     private static final JFrame frame = new JFrame("Game - Save My Cheese");
     private static final JButton jbStartPause = new JButton("Pause");
-    private static final JButton jbBack = new JButton("Back");
+    private static final JButton jbRestart = new JButton("Restart");
     private static final JButton jbNext = new JButton("Next");
+    private static final JButton jbBack = new JButton("Back");
     private static final JPanel jpCanvas = new CanvasPanel();
     private static final JPanel jpButtons = new JPanel();
     private static final java.awt.Font BUTTON_FONT = new java.awt.Font("Tahoma", 1, 12);
     private static final java.awt.Font LEVEL_SUCCESS_FONT = new java.awt.Font("Tahoma", 1, 12);
+    private static final JLabel jlSuccess = new JLabel("Level completed successfully");
 
     @Override
     public Dimension getPreferredSize() {
@@ -62,33 +65,44 @@ public class GameView extends JPanel {
         add(jpCanvas);
         add(jpButtons);
 
-        jpButtons.setBounds((int) getPreferredSize().getWidth() - (BUTTON_PANEL_WIDTH + 10), 10, BUTTON_PANEL_WIDTH, 75);
+        jpButtons.setBounds((int) getPreferredSize().getWidth() - (BUTTON_PANEL_WIDTH + 10), 10, BUTTON_PANEL_WIDTH, 100);
         jpCanvas.setBounds(0, 0, (int) getPreferredSize().getWidth() - (BUTTON_PANEL_WIDTH + 10), (int) getPreferredSize().getHeight());
 
-        jpButtons.setLayout(new java.awt.GridLayout(3, 0));
+        jpButtons.setLayout(new java.awt.GridLayout(4, 0));
         jpButtons.add(jbStartPause);
-        jpButtons.add(jbBack);
+        jpButtons.add(jbRestart);
         jpButtons.add(jbNext);
+        jpButtons.add(jbBack);
 
         jbStartPause.setFont(BUTTON_FONT);
-        jbBack.setFont(BUTTON_FONT);
+        jbRestart.setFont(BUTTON_FONT);
         jbNext.setFont(BUTTON_FONT);
         jbNext.setEnabled(false);
+        jbBack.setFont(BUTTON_FONT);
 
         jbStartPause.addActionListener((java.awt.event.ActionEvent evt) -> {
             System.out.println("start");
         });
 
+        jbRestart.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                GameController.start();
+                jlSuccess.setText("");
+                jpCanvas.repaint();
+            }
+        });
+        
+        jbNext.addActionListener((java.awt.event.ActionEvent evt) -> {
+            System.out.println("next");
+        });
+        
         jbBack.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 makeVisible(false);
                 WelcomeView.makeVisible(true);
             }
-        });
-        
-        jbNext.addActionListener((java.awt.event.ActionEvent evt) -> {
-            System.out.println("next");
         });
 
         frame.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -103,8 +117,7 @@ public class GameView extends JPanel {
         frame.setVisible(isVisible);
     }
 
-    public static void setLevelSuccess() {
-        JLabel jlSuccess = new JLabel("Level completed successfully");
+    public static void setLevelSuccess() {        
         jlSuccess.setFont(LEVEL_SUCCESS_FONT);
         jlSuccess.setForeground(Color.BLUE);
         jlSuccess.setBounds(10, 10, 200, 50);

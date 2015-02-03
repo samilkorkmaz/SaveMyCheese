@@ -96,6 +96,8 @@ public class GameController {
      * Initialize game (create puzzle pieces etc.).
      */
     private static void init() {
+        polygonList.clear();
+        snapPolygonList.clear();
         for (int i = 0; i < 3; i++) {
             int[] xCoords = {0, 60, 120, 100, 20};
             int[] yCoords = {50, 0, 50, 125, 125};
