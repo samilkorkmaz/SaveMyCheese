@@ -20,7 +20,7 @@ public class GameController {
     private static int prevMouseX;
     private static int prevMouseY;
     private static boolean isAllSnapped;
-    
+
     public static void start() {
         init();
     }
@@ -53,7 +53,7 @@ public class GameController {
             }
         }
     }
-    
+
     public static boolean isAllSnapped() {
         return isAllSnapped;
     }
@@ -65,7 +65,7 @@ public class GameController {
                 isAllSnapped = false;
                 break;
             }
-        }  
+        }
         if (isAllSnapped) {
             GameView.setLevelSuccess();
         }
@@ -98,17 +98,32 @@ public class GameController {
     private static void init() {
         polygonList.clear();
         snapPolygonList.clear();
-        for (int i = 0; i < 3; i++) {
-            int[] xCoords = {0, 60, 120, 100, 20};
-            int[] yCoords = {50, 0, 50, 125, 125};
-            MyPolygon myPolygon = new MyPolygon(xCoords, yCoords, xCoords.length);
-            myPolygon.translate(i * 50, i * 50);
-            polygonList.add(myPolygon);
+        /*for (int i = 0; i < 3; i++) {
+         int[] xCoords = {0, 60, 120, 100, 20};
+         int[] yCoords = {50, 0, 50, 125, 125};
+         MyPolygon myPolygon = new MyPolygon(xCoords, yCoords, xCoords.length);
+         myPolygon.translate(i * 50, i * 50);
+         polygonList.add(myPolygon);
 
-            MyPolygon snapPolygon = new MyPolygon(xCoords, yCoords, xCoords.length);
-            snapPolygon.translate(200 + i * 50, 20 + i * 50);
-            snapPolygonList.add(snapPolygon);
-        }
+         MyPolygon snapPolygon = new MyPolygon(xCoords, yCoords, xCoords.length);
+         snapPolygon.translate(200 + i * 50, 20 + i * 50);
+         snapPolygonList.add(snapPolygon);
+         }*/
+        addToList(new int[]{110, 134, 215, 238}, new int[]{90, 43, 43, 90}, 270, 20);
+        addToList(new int[]{110, 157, 140, 157, 110, 93}, new int[]{90, 90, 126, 162, 162, 126}, 253, 67);
+        addToList(new int[]{110, 157, 174, 157, 110, 127}, new int[]{90, 90, 126, 162, 162, 126}, 351, 67);
+        addToList(new int[]{110, 134, 215, 238}, new int[]{90, 43+94, 43+94, 90}, 270, 139);
+        
+    }
+    
+    private static void addToList(int[] xCoords, int[] yCoords, int xSnap, int ySnap) {
+        MyPolygon myPolygon = new MyPolygon(xCoords, yCoords, xCoords.length);
+        myPolygon.translate(10, 200);
+        polygonList.add(myPolygon);
+
+        MyPolygon snapPolygon = new MyPolygon(xCoords, yCoords, xCoords.length);
+        snapPolygon.translate(xSnap, ySnap);
+        snapPolygonList.add(snapPolygon);
     }
 
 }
