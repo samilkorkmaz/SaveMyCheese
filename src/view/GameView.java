@@ -36,7 +36,8 @@ public class GameView extends JPanel {
     private static final JPanel jpButtons = new JPanel();
     private static final java.awt.Font BUTTON_FONT = new java.awt.Font("Tahoma", 1, 12);
     private static final java.awt.Font LEVEL_SUCCESS_FONT = new java.awt.Font("Tahoma", 1, 12);
-    private static final JLabel jlSuccess = new JLabel("Level completed successfully");
+    private static final String SUCCESS_TEXT = "Level completed successfully";
+    private static final JLabel jlSuccess = new JLabel();
 
     @Override
     public Dimension getPreferredSize() {
@@ -62,6 +63,7 @@ public class GameView extends JPanel {
 
     private GameView() {
         setLayout(null);
+        jpCanvas.setLayout(null);
         add(jpCanvas);
         add(jpButtons);
 
@@ -117,11 +119,13 @@ public class GameView extends JPanel {
         frame.setVisible(isVisible);
     }
 
-    public static void setLevelSuccess() {        
+    public static void setLevelSuccess() {
+        jpCanvas.add(jlSuccess);
+        jlSuccess.setBounds(10, 10, 150, 50);
+        jlSuccess.setText(SUCCESS_TEXT);
         jlSuccess.setFont(LEVEL_SUCCESS_FONT);
         jlSuccess.setForeground(Color.BLUE);
-        jlSuccess.setBounds(10, 10, 200, 50);
-        jpCanvas.add(jlSuccess);
+        jlSuccess.setBounds(10, 10, 200, 50);        
         jbNext.setEnabled(true);
     }
 }

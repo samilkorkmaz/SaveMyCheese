@@ -113,7 +113,6 @@ public class GameController {
         addToList(new int[]{110, 157, 140, 157, 110, 93}, new int[]{90, 90, 126, 162, 162, 126}, 253, 67);
         addToList(new int[]{110, 157, 174, 157, 110, 127}, new int[]{90, 90, 126, 162, 162, 126}, 351, 67);
         addToList(new int[]{110, 134, 215, 238}, new int[]{90, 43+94, 43+94, 90}, 270, 139);
-        
     }
     
     private static void addToList(int[] xCoords, int[] yCoords, int xSnap, int ySnap) {
