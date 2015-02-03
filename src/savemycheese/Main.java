@@ -12,7 +12,7 @@ import view.WelcomeView;
 public class Main {
 
     public static void main(String[] args) {
-        GameController.init();
+        GameController.start();
         WelcomeView.createAndShowGUI();
     }
     

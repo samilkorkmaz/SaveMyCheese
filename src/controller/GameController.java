@@ -20,6 +20,10 @@ public class GameController {
     private static int prevMouseX;
     private static int prevMouseY;
     private static boolean isAllSnapped;
+    
+    public static void start() {
+        init();
+    }
 
     public static void toggleSelectedShape() {
         if (selectedPolygon != null) {
@@ -91,7 +95,7 @@ public class GameController {
     /**
      * Initialize game (create puzzle pieces etc.).
      */
-    public static void init() {
+    private static void init() {
         for (int i = 0; i < 3; i++) {
             int[] xCoords = {0, 60, 120, 100, 20};
             int[] yCoords = {50, 0, 50, 125, 125};
