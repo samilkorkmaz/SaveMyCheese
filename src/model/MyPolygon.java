@@ -20,8 +20,8 @@ public class MyPolygon extends Polygon {
         super(xCoords, yCoords, nCoords);
         isSnapped = false;
         //make sure that the smallest coordinate is zero:
-        //setSmallestCoordinateToZero(super.xpoints);
-        //setSmallestCoordinateToZero(super.ypoints);
+        setSmallestCoordinateToZero(super.xpoints);
+        setSmallestCoordinateToZero(super.ypoints);
     }
 
     private static int[] getXCoords(final int width) {
