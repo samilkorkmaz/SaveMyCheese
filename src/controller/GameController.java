@@ -74,22 +74,14 @@ public class GameController {
      */
     public static void init() {
         for (int i = 0; i < 3; i++) {
-            int x0 = i * 50;
-            int y0 = i * 50;
-            int[] xCoords = {x0 + 0, x0 + 60, x0 + 120, x0 + 100, x0 + 20};
-            int[] yCoords = {y0 + 50, y0 + 0, y0 + 50, y0 + 125, y0 + 125};
+            int[] xCoords = {0, 60, 120, 100, 20};
+            int[] yCoords = {50, 0, 50, 125, 125};
             MyPolygon myPolygon = new MyPolygon(xCoords, yCoords, xCoords.length);
+            myPolygon.translate(i*50, i*50);
             polygonList.add(myPolygon);
 
-            int[] xSnapCoords = new int[xCoords.length];
-            int[] ySnapCoords = new int[xCoords.length];
-            int xSnap = 200;
-            int ySnap = 20;
-            for (int j = 0; j < xCoords.length; j++) {
-                xSnapCoords[j] = xSnap + xCoords[j];
-                ySnapCoords[j] = ySnap + yCoords[j];
-            }
-            MyPolygon snapPolygon = new MyPolygon(xSnapCoords, ySnapCoords, xSnapCoords.length);
+            MyPolygon snapPolygon = new MyPolygon(xCoords, yCoords, xCoords.length);
+            snapPolygon.translate(200 + i*50, 20 + i*50);
             snapPolygonList.add(snapPolygon);
         }
     }
