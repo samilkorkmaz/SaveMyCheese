@@ -4,7 +4,6 @@ import controller.GameController;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,7 +39,7 @@ public class GameView extends JPanel {
     private static final JLabel jlSuccessFail = new JLabel();
 
     @Override
-    public Dimension getPreferredSize() {
+    public final Dimension getPreferredSize() {
         return new Dimension(PREF_WIDTH, PREF_HEIGHT);
     }
 
@@ -92,25 +91,19 @@ public class GameView extends JPanel {
             System.out.println("start");
         });
 
-        jbRestart.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                GameController.start();
-                jlSuccessFail.setText("");
-                jpCanvas.repaint();
-            }
+        jbRestart.addActionListener((ActionEvent ae) -> {
+            GameController.start();
+            jlSuccessFail.setText("");
+            jpCanvas.repaint();
         });
         
         jbNext.addActionListener((java.awt.event.ActionEvent evt) -> {
             System.out.println("next");
         });
         
-        jbBack.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                makeVisible(false);
-                WelcomeView.makeVisible(true);
-            }
+        jbBack.addActionListener((ActionEvent ae) -> {
+            makeVisible(false);
+            WelcomeView.makeVisible(true);
         });
 
         frame.addWindowListener(new java.awt.event.WindowAdapter() {
