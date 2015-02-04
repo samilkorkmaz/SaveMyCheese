@@ -31,7 +31,7 @@ public class GameView extends JPanel {
     private static final JButton jbRestart = new JButton("Restart");
     private static final JButton jbNext = new JButton("Next");
     private static final JButton jbBack = new JButton("Back");
-    private static final JPanel jpCanvas = new CanvasPanel();
+    private static JPanel jpCanvas;
     private static final JPanel jpButtons = new JPanel();
     private static final java.awt.Font BUTTON_FONT = new java.awt.Font("Tahoma", 1, 12);
     private static final java.awt.Font LEVEL_SUCCESS_FONT = new java.awt.Font("Tahoma", 1, 24);
@@ -61,7 +61,8 @@ public class GameView extends JPanel {
     }
 
     private GameView() {
-        setLayout(null);        
+        setLayout(null);   
+        jpCanvas = new CanvasPanel(0, 0, (int) getPreferredSize().getWidth() - (BUTTON_PANEL_WIDTH + 10), (int) getPreferredSize().getHeight());
         jpCanvas.add(jlSuccessFail);
         jlSuccessFail.setBounds(10, 10, 450, 50);
         jlSuccessFail.setFont(LEVEL_SUCCESS_FONT);
@@ -69,8 +70,6 @@ public class GameView extends JPanel {
 
         add(jpCanvas);
         add(jpButtons);
-
-        jpCanvas.setBounds(0, 0, (int) getPreferredSize().getWidth() - (BUTTON_PANEL_WIDTH + 10), (int) getPreferredSize().getHeight());
 
         jpButtons.add(jbStartPause);
         jpButtons.add(jbRestart);
