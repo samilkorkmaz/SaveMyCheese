@@ -61,9 +61,7 @@ public class GameView extends JPanel {
     }
 
     private GameView() {
-        setLayout(null);
-        jpCanvas.setLayout(null);
-        jpCanvas.setBackground(Color.GREEN);
+        setLayout(null);        
         jpCanvas.add(jlSuccessFail);
         jlSuccessFail.setBounds(10, 10, 450, 50);
         jlSuccessFail.setFont(LEVEL_SUCCESS_FONT);
