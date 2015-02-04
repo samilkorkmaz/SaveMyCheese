@@ -3,6 +3,7 @@ package model;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.Shape;
 
 /**
  * Rectangle that knows if it is inside a given polygon.
@@ -13,7 +14,7 @@ import java.awt.Rectangle;
  */
 public class MyRectangle extends Rectangle {
 
-    private final int pathType;
+    private int pathType;
     
     public MyRectangle(int x, int y, int width, int height, int pathType) {
         super(x, y, width, height);
@@ -23,9 +24,13 @@ public class MyRectangle extends Rectangle {
     public int getPathType() {
         return pathType;
     }
+    
+    public void setPathType(int pathType) {
+        this.pathType = pathType;
+    }
 
-    public boolean isInPolygon(Polygon polygon) {
-        return polygon.contains(calcCenterPoint());
+    public boolean isInShape(Shape shape) {
+        return shape.contains(calcCenterPoint());
     }
 
     private Point calcCenterPoint() {

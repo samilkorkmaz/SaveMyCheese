@@ -62,7 +62,7 @@ public class GameView extends JPanel {
 
     private GameView() {
         setLayout(null);   
-        jpCanvas = new CanvasPanel(0, 0, (int) getPreferredSize().getWidth() - (BUTTON_PANEL_WIDTH + 10), (int) getPreferredSize().getHeight());
+        jpCanvas = CanvasPanel.create(0, 0, (int) getPreferredSize().getWidth() - (BUTTON_PANEL_WIDTH + 10), (int) getPreferredSize().getHeight());
         jpCanvas.add(jlSuccessFail);
         jlSuccessFail.setBounds(10, 10, 450, 50);
         jlSuccessFail.setFont(LEVEL_SUCCESS_FONT);
@@ -94,6 +94,7 @@ public class GameView extends JPanel {
             jlSuccessFail.setText("");
             jpCanvas.repaint();
             jbNext.setEnabled(false);
+            CanvasPanel.resetMap();
         });
 
         jbNext.addActionListener((java.awt.event.ActionEvent evt) -> {

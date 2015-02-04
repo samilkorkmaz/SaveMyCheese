@@ -21,6 +21,7 @@ import model.MyRectangle;
  */
 public class CanvasPanel extends JPanel {
 
+    private static CanvasPanel instance;
     private static final Stroke SHAPE_STROKE = new BasicStroke(3f);
     private static final Stroke SNAP_SHAPE_STROKE = new BasicStroke(1f);
     private static final Color SHAPE_LINE_COLOR = Color.BLACK;
@@ -28,13 +29,15 @@ public class CanvasPanel extends JPanel {
     private static final Color SNAP_SHAPE_LINE_COLOR = Color.BLACK;
     private static final Color SNAP_SHAPE_FILL_COLOR = Color.WHITE;
     private static final Color BACKGROUND_COLOR = Color.GREEN;
-    private int[][] mapArray2D;
-    private final List<MyRectangle> mapRectList = new ArrayList<>();
+    private static int[][] mapArray2D;
+    private static final List<MyRectangle> mapRectList = new ArrayList<>();
     private static final Color OPEN_PATH_COLOR = BACKGROUND_COLOR;
     private static final Color WALL_COLOR = Color.BLACK;
     private static final Color MAP_GRID_COLOR = Color.LIGHT_GRAY;
     private final int height;
     private final int width;
+    private static final int N_MAP_ROWS = 25;
+    private static final int N_MAP_COLS = 30;
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -59,7 +62,7 @@ public class CanvasPanel extends JPanel {
 
     private void drawMap(Graphics2D g2) {
         for (MyRectangle rect : mapRectList) {
-            if (rect.getPathType() == Map2D.OPEN_PATH) {
+            if (rect.getPathType() == Map2D.OPEN) {
                 g2.setColor(OPEN_PATH_COLOR);
             } else {
                 g2.setColor(WALL_COLOR);
@@ -69,8 +72,15 @@ public class CanvasPanel extends JPanel {
             g2.draw(rect);
         }
     }
+    
+    public static CanvasPanel create(int x, int y, int width, int height) {
+        if (instance == null) {
+            instance = new CanvasPanel(x, y, width, height);
+        }
+        return instance;
+    }
 
-    public CanvasPanel(int x, int y, int width, int height) {
+    private CanvasPanel(int x, int y, int width, int height) {
         super();
         setBounds(x, y, width, height);
         this.height = height;
@@ -84,18 +94,51 @@ public class CanvasPanel extends JPanel {
     }
 
     private void createMap() {
-        int nRows = 25;
-        int nCols = 30;
-        mapArray2D = Map2D.create(nRows, nCols);
-        int rectHeight = height / nRows;
-        int rectWidth = width / nCols;
-        for (int iRow = 0; iRow < nRows; iRow++) {
-            for (int iCol = 0; iCol < nCols; iCol++) {
+
+        mapArray2D = Map2D.create(N_MAP_ROWS, N_MAP_COLS);
+        int rectHeight = height / N_MAP_ROWS;
+        int rectWidth = width / N_MAP_COLS;
+        for (int iRow = 0; iRow < N_MAP_ROWS; iRow++) {
+            for (int iCol = 0; iCol < N_MAP_COLS; iCol++) {
                 MyRectangle rect = new MyRectangle(iCol * rectWidth, iRow * rectHeight, rectWidth, rectHeight,
                         mapArray2D[iRow][iCol]);
                 mapRectList.add(rect);
             }
         }
+    }
+
+    public static void resetMap() {
+        for (int iRow = 0; iRow < N_MAP_ROWS; iRow++) {
+            for (int iCol = 0; iCol < N_MAP_COLS; iCol++) {
+                mapArray2D[iRow][iCol] = Map2D.OPEN;
+                mapRectList.get(iRow * N_MAP_ROWS + iCol).setPathType(Map2D.OPEN);
+            }
+        }
+    }
+
+    public static void updateMap(Shape shape) {
+        for (MyRectangle rect : mapRectList) {
+            if (rect.isInShape(shape)) {
+                RectRowCol rectRowCol = getRowCol(rect);
+                mapArray2D[rectRowCol.rowIndex][rectRowCol.colIndex] = Map2D.WALL;
+                rect.setPathType(Map2D.WALL);
+            }
+        }
+        instance.repaint();
+    }
+
+    private static class RectRowCol {
+
+        int rowIndex;
+        int colIndex;
+    }
+
+    private static RectRowCol getRowCol(MyRectangle rect) {
+        RectRowCol rectRowCol = new RectRowCol();
+        int i1D = mapRectList.indexOf(rect);
+        rectRowCol.colIndex = i1D % N_MAP_COLS;
+        rectRowCol.rowIndex = (i1D - rectRowCol.colIndex) / N_MAP_COLS;
+        return rectRowCol;
     }
 
     private class MyMouseAdapter extends MouseAdapter {
@@ -119,7 +162,7 @@ public class CanvasPanel extends JPanel {
 
         @Override
         public void mouseReleased(MouseEvent e) {
-            GameController.toggleSelectedShape();
+            GameController.deselectShape();
             repaint();
         }
     }
