@@ -23,6 +23,7 @@ public class CanvasPanel extends JPanel {
     private static final Color SHAPE_FILL_COLOR = Color.BLUE;
     private static final Color SNAP_SHAPE_LINE_COLOR = Color.BLACK;
     private static final Color SNAP_SHAPE_FILL_COLOR = Color.WHITE;
+    private static final Color BACKGROUND_COLOR = Color.GREEN;
     
     @Override
     protected void paintComponent(Graphics g) {
@@ -46,6 +47,8 @@ public class CanvasPanel extends JPanel {
 
     public CanvasPanel() {
         super();
+        setLayout(null);
+        setBackground(BACKGROUND_COLOR);
         MyMouseAdapter myMouseAdapter = new MyMouseAdapter();
         addMouseListener(myMouseAdapter);
         addMouseMotionListener(myMouseAdapter);
