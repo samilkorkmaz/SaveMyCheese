@@ -1,7 +1,6 @@
 package view;
 
 import java.awt.Dimension;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
@@ -17,7 +16,7 @@ import javax.swing.JPanel;
  *
  * @author Samil Korkmaz
  * @date January 2015
- * @copyright Public Domain
+ * @license Public Domain
  */
 public class WelcomeView extends JPanel {
 
