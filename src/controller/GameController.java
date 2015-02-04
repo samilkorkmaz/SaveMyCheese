@@ -109,10 +109,10 @@ public class GameController {
          snapPolygon.translate(200 + i * 50, 20 + i * 50);
          snapPolygonList.add(snapPolygon);
          }*/
-        addToList(new int[]{110, 134, 215, 238}, new int[]{90, 43, 43, 90}, 270, 20 + 120);
+        addToList(new int[]{110, 134, 215, 238}, new int[]{90, 43+94, 43+94, 90}, 270, 139 + 120);
         addToList(new int[]{110, 157, 140, 157, 110, 93}, new int[]{90, 90, 126, 162, 162, 126}, 253, 67 + 120);
         addToList(new int[]{110, 157, 174, 157, 110, 127}, new int[]{90, 90, 126, 162, 162, 126}, 351, 67 + 120);
-        addToList(new int[]{110, 134, 215, 238}, new int[]{90, 43+94, 43+94, 90}, 270, 139 + 120);
+        addToList(new int[]{110, 134, 215, 238}, new int[]{90, 43, 43, 90}, 270, 20 + 120);
     }
     
     private static void addToList(int[] xCoords, int[] yCoords, int xSnap, int ySnap) {
