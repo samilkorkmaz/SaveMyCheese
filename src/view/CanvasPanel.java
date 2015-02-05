@@ -11,10 +11,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.swing.JPanel;
-import model.AStarPathFinder;
 import model.Map2D;
 import model.MouseThread;
 import model.MyRectangle;
@@ -42,71 +41,18 @@ public class CanvasPanel extends JPanel {
     private static final Color CHEESE_COLOR = Color.YELLOW;
     private static final Color PATH_COLOR = Color.ORANGE;
     private static final Color CURRENT_NODE_COLOR = Color.RED;
-    private static int iActiveRow = 0;
-    private static int iActiveCol = 0;
-    private static List<Node> path; //starts from endNode and ends at startNode
-    private static int[][] mapArray2D;
-    private static final List<MyRectangle> mapRectList = new ArrayList<>();
-    public static final int N_MAP_ROWS = 25;
-    public static final int N_MAP_COLS = 30;
-    private static final int cheeseIRow = 9;
-    private static final int cheeseICol = 14;
-    private static int startIRow = 0;
-    private static int startICol = 0;
-    private static MouseThread mouseThread;
 
-    public static List<Node> getPath() {
-        return path;
-    }
+    public static final int CHEESE_IROW = 9;
+    public static final int CHEESE_ICOL = 14;
 
-    public static void createMap(int width, int height) {
-        mapArray2D = Map2D.create(N_MAP_ROWS, N_MAP_COLS);
-        int rectHeight = height / N_MAP_ROWS;
-        int rectWidth = width / N_MAP_COLS;
-        for (int iRow = 0; iRow < N_MAP_ROWS; iRow++) {
-            for (int iCol = 0; iCol < N_MAP_COLS; iCol++) {
-                MyRectangle rect = new MyRectangle(iCol * rectWidth, iRow * rectHeight, rectWidth, rectHeight, mapArray2D[iRow][iCol]);
-                mapRectList.add(rect);
-            }
+    private static final int N_MOUSE_THREAD = 3;
+    private static int counterThread = 0;
+    private static final List<MouseThread> mouseThreadList = new ArrayList<>();
+
+    public static void refreshDrawing() {
+        if (instance != null) {
+            instance.repaint();
         }
-    }
-
-    public static void resetMap() {
-        for (int iRow = 0; iRow < N_MAP_ROWS; iRow++) {
-            for (int iCol = 0; iCol < N_MAP_COLS; iCol++) {
-                mapArray2D[iRow][iCol] = Map2D.OPEN;
-                mapRectList.get(iRow * N_MAP_ROWS + iCol).setPathType(Map2D.OPEN);
-            }
-        }
-        iActiveRow = 0;
-        iActiveCol = 0;
-        updatePath();
-    }
-
-    public static void updateMap(Shape shape) {
-        for (MyRectangle rect : mapRectList) {
-            if (rect.isInShape(shape)) {
-                RectRowCol rectRowCol = getRowCol(rect);
-                mapArray2D[rectRowCol.rowIndex][rectRowCol.colIndex] = Map2D.WALL;
-                rect.setPathType(Map2D.WALL);
-            }
-        }
-        updatePath();
-        instance.repaint();
-    }
-
-    public static RectRowCol getRowCol(MyRectangle rect) {
-        RectRowCol rectRowCol = new RectRowCol();
-        int i1D = mapRectList.indexOf(rect);
-        rectRowCol.colIndex = i1D % N_MAP_COLS;
-        rectRowCol.rowIndex = (i1D - rectRowCol.colIndex) / N_MAP_COLS;
-        return rectRowCol;
-    }
-
-    public static class RectRowCol {
-
-        public int rowIndex;
-        public int colIndex;
     }
 
     @Override
@@ -126,50 +72,40 @@ public class CanvasPanel extends JPanel {
             g2.setColor(SHAPE_LINE_COLOR);
             g2.draw(shape);
         }
-        drawPath(g2);
+        drawPaths(g2);
     }
 
-    public static void setActivePoint(int iRow, int iCol) {
-        iActiveRow = iRow;
-        iActiveCol = iCol;
-        if (instance != null) {
-            instance.repaint();
-        }
-    }
-
-    public static void updatePath() {
-        Node startNode = new Node(null, iActiveRow, iActiveCol);
-        Node endNode = new Node(null, 9, 14);
-        CanvasPanel.setActivePoint(startNode.getRowIndex(), startNode.getColIndex());
-        path = AStarPathFinder.calcPath(mapArray2D, startNode, endNode);
-        createNewMouseThread();
-    }
-
-    private void drawPath(Graphics2D g2) {
-        for (Node node : path) {
-            MyRectangle rect = mapRectList.get(get1DIndex(node.getRowIndex(), node.getColIndex()));
-            if (node.getRowIndex() == iActiveRow && node.getColIndex() == iActiveCol) {
-                g2.setColor(CURRENT_NODE_COLOR);
-            } else {
-                g2.setColor(PATH_COLOR);
+    private void drawPaths(Graphics2D g2) {
+        for (int i = 0; i < mouseThreadList.size(); i++) {
+            MouseThread mouseThread = mouseThreadList.get(i);
+            for (Node node : mouseThread.getPath()) {
+                MyRectangle cell = MouseThread.getMapCellList().get(get1DIndex(node.getRowIndex(), node.getColIndex()));
+                MouseThread.RectRowCol activePoint = mouseThread.getActivePoint();
+                //System.out.println("i = " + i + ", path.size() = " + mouseThread.getPath().size() + ", activePoint.rowIndex = "
+                //        + activePoint.rowIndex + ", colIndex = " + activePoint.colIndex);
+                if (node.getRowIndex() == activePoint.rowIndex && node.getColIndex() == activePoint.colIndex) {
+                    g2.setColor(CURRENT_NODE_COLOR);
+                } else {
+                    g2.setColor(PATH_COLOR);
+                }
+                g2.draw(cell);
             }
-            g2.draw(rect);
         }
     }
 
     private int get1DIndex(int iRow, int iCol) {
-        return iRow * N_MAP_COLS + iCol;
+        return iRow * MouseThread.N_MAP_COLS + iCol;
     }
 
     private void drawMap(Graphics2D g2) {
-        for (MyRectangle rect : mapRectList) {
+        for (MyRectangle rect : MouseThread.getMapCellList()) {
             if (rect.getPathType() == Map2D.OPEN) {
                 g2.setColor(OPEN_PATH_COLOR);
             } else {
                 g2.setColor(WALL_COLOR);
             }
-            RectRowCol rc = getRowCol(rect);
-            if (rc.rowIndex == path.get(0).getRowIndex() && rc.colIndex == path.get(0).getColIndex()) {
+            MouseThread.RectRowCol rc = MouseThread.getRowCol(rect);
+            if (rc.rowIndex == CHEESE_IROW && rc.colIndex == CHEESE_ICOL) {
                 g2.setColor(CHEESE_COLOR);
             }
             g2.fill(rect);
@@ -184,26 +120,63 @@ public class CanvasPanel extends JPanel {
         }
         return instance;
     }
-
-    private static void createNewMouseThread() {
-        if (mouseThread != null) {
-            mouseThread.setKeepRunning(false); //kill previous thread
+    
+    public static void updateMap(Shape shape) {
+        MouseThread.updateMap(shape);
+        List<MouseThread.RectRowCol> prevActivePointList = new ArrayList<>();
+        for (MouseThread mouseThread : mouseThreadList) {
+            MouseThread.RectRowCol prevActivePoint = mouseThread.getActivePoint();
+            prevActivePointList.add(prevActivePoint);
+            mouseThread.setKeepRunning(false); //kill thread
         }
-        mouseThread = new MouseThread();
-        mouseThread.start();
+        mouseThreadList.clear();
+        for (int i=0; i < N_MOUSE_THREAD; i++) {
+            MouseThread.RectRowCol prevActivePoint = prevActivePointList.get(i);
+            MouseThread mouseThread = new MouseThread(counterThread++);
+            mouseThreadList.add(mouseThread);
+            mouseThread.setActivePoint(prevActivePoint);
+            mouseThread.updatePath();
+            mouseThread.start();
+        }
+        instance.repaint();
+    }
+
+    public static void resetMap() {
+        MouseThread.resetMap();
+        for (MouseThread mouseThread : mouseThreadList) {
+            mouseThread.setKeepRunning(false); //kill thread
+        }
+        mouseThreadList.clear();
+        for (int i = 0; i < N_MOUSE_THREAD; i++) {
+            MouseThread mouseThread = new MouseThread(counterThread++);
+            mouseThreadList.add(mouseThread);
+            mouseThread.setActivePoint(0, i * 10); //TODO
+            mouseThread.updatePath();
+            mouseThread.start();
+        }
+        instance.repaint();
+    }
+
+    private static void createMouseList(int width, int height) {
+        MouseThread.createMap(width, height);
+        for (int i = 0; i < N_MOUSE_THREAD; i++) {
+            MouseThread mt = new MouseThread(counterThread++);
+            mouseThreadList.add(mt);
+            mt.setActivePoint(0, i * 10); //TODO
+            mt.updatePath();
+            mt.start();
+        }
     }
 
     private CanvasPanel(int x, int y, int width, int height) {
         super();
+        createMouseList(width, height);
         setBounds(x, y, width, height);
         setLayout(null);
         setBackground(BACKGROUND_COLOR);
-        createMap(width, height);
-        updatePath();
         MyMouseAdapter myMouseAdapter = new MyMouseAdapter();
         addMouseListener(myMouseAdapter);
         addMouseMotionListener(myMouseAdapter);
-
     }
 
     private class MyMouseAdapter extends MouseAdapter {
