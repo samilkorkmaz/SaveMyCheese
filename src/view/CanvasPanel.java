@@ -5,6 +5,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.event.MouseAdapter;
@@ -42,8 +43,8 @@ public class CanvasPanel extends JPanel {
     private static final Color PATH_COLOR = Color.ORANGE;
     private static final Color CURRENT_NODE_COLOR = Color.RED;
 
-    public static final int CHEESE_IROW = 9;
-    public static final int CHEESE_ICOL = 14;
+    public static final int CHEESE_IROW = 18;//9;
+    public static final int CHEESE_ICOL = 30;//14;
 
     private static final int N_MOUSE_THREAD = 3;
     private static int counterThread = 0;
@@ -81,10 +82,11 @@ public class CanvasPanel extends JPanel {
             for (Node node : mouseThread.getPath()) {
                 MyRectangle cell = MouseThread.getMapCellList().get(get1DIndex(node.getRowIndex(), node.getColIndex()));
                 MouseThread.RectRowCol activePoint = mouseThread.getActivePoint();
-                //System.out.println("i = " + i + ", path.size() = " + mouseThread.getPath().size() + ", activePoint.rowIndex = "
-                //        + activePoint.rowIndex + ", colIndex = " + activePoint.colIndex);
                 if (node.getRowIndex() == activePoint.rowIndex && node.getColIndex() == activePoint.colIndex) {
                     g2.setColor(CURRENT_NODE_COLOR);
+                    Image mouseImage = MouseThread.getMouseImage();
+                    g2.drawImage(mouseImage, cell.x - mouseImage.getWidth(null)/2 + cell.width/2, 
+                            cell.y - mouseImage.getHeight(null)/2 + cell.height/2, null);
                 } else {
                     g2.setColor(PATH_COLOR);
                 }

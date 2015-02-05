@@ -1,15 +1,21 @@
-/*
- * @author Samil Korkmaz
- * @date January 2015
- * @license Public Domain
- */
 package model;
 
+import java.awt.Color;
+import java.awt.Image;
 import java.awt.Shape;
+import java.awt.Toolkit;
+import java.awt.image.BufferedImage;
+import java.awt.image.FilteredImageSource;
+import java.awt.image.ImageFilter;
+import java.awt.image.ImageProducer;
+import java.awt.image.RGBImageFilter;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import view.CanvasPanel;
 
 /**
@@ -20,10 +26,11 @@ import view.CanvasPanel;
  * @license Public Domain
  */
 public class MouseThread extends Thread implements Runnable {
-    
+
     private boolean keepRunning = true;
-    public static final int N_MAP_ROWS = 25;
-    public static final int N_MAP_COLS = 30;
+    public static final int N_MAP_ROWS = 50;
+    public static final int N_MAP_COLS = 60;
+    private static final int SLEEP_TIME_MS = 500;
     private List<Node> path; //starts from endNode and ends at startNode
     private static int[][] mapArray2D;
     private static final List<MyRectangle> mapCellList = new ArrayList<>();
@@ -31,8 +38,47 @@ public class MouseThread extends Thread implements Runnable {
     private int iActiveCol = 0;
     private final Object myLock = new Object();
     private final int iThread;
-    
-    
+    private static BufferedImage mouseImage;
+
+    public static Image getMouseImage() {
+        if (mouseImage == null) {
+            try {
+                mouseImage = ImageIO.read(new File("./images/Mouse.png"));
+            } catch (IOException ex) {
+                Logger.getLogger(MouseThread.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return makeColorTransparent(mouseImage, Color.WHITE);
+    }
+
+    /**
+     * Make provided image transparent wherever color matches the provided color.<br/>
+     * 
+     * Reference: http://www.javaworld.com/article/2074105/core-java/making-white-image-backgrounds-transparent-with-java-2d-groovy.html
+     *
+     * @param im BufferedImage whose color will be made transparent.
+     * @param color Color in provided image which will be made transparent.
+     * @return Image with transparency applied.
+     */
+    public static Image makeColorTransparent(final BufferedImage im, final Color color) {
+        final ImageFilter filter = new RGBImageFilter() {
+            // the color we are looking for (white)... Alpha bits are set to opaque
+            public int markerRGB = color.getRGB() | 0xFFFFFFFF;
+            @Override
+            public final int filterRGB(final int x, final int y, final int rgb) {
+                if ((rgb | 0xFF000000) == markerRGB) {
+                    // Mark the alpha bits as zero - transparent
+                    return 0x00FFFFFF & rgb;
+                } else {
+                    // nothing to do
+                    return rgb;
+                }
+            }
+        };
+        final ImageProducer ip = new FilteredImageSource(im.getSource(), filter);
+        return Toolkit.getDefaultToolkit().createImage(ip);
+    }
+
     public static List<MyRectangle> getMapCellList() {
         return mapCellList;
     }
@@ -129,13 +175,13 @@ public class MouseThread extends Thread implements Runnable {
     @Override
     public void run() {
         for (int i = path.size() - 1; i >= 0; i--) {
-            if (!keepRunning) {                
+            if (!keepRunning) {
                 break;
             }
             Node currentNode = path.get(i);
             setActivePoint(currentNode.getRowIndex(), currentNode.getColIndex());
             try {
-                Thread.sleep(1000);
+                Thread.sleep(SLEEP_TIME_MS);
             } catch (InterruptedException ex) {
                 Logger.getLogger(MouseThread.class.getName()).log(Level.SEVERE, null, ex);
             }
