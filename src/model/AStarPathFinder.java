@@ -19,14 +19,14 @@ public class AStarPathFinder {
 
     public static final int WALL = 0;
     public static final int OPEN = 1;
-    private static final List<Node> path = new ArrayList<>();
+    private final List<Node> path = new ArrayList<>();
     private static final int SIMPLE_MOVEMENT_COST = 10; //cost when moving horizontal or vertical
     private static final int DIAGONAL_MOVEMENT_COST = 14;
-    private static final List<Node> openList = new ArrayList<>();
-    private static final List<Node> closedList = new ArrayList<>();
-    private static boolean pathFound;
+    private final List<Node> openList = new ArrayList<>();
+    private final List<Node> closedList = new ArrayList<>();
+    private boolean pathFound;
 
-    public static boolean isPathFound() {
+    public boolean isPathFound() {
         return pathFound;
     }
 
@@ -37,7 +37,7 @@ public class AStarPathFinder {
      * @param endNode
      * @return path nodes from end to start
      */
-    public static List<Node> calcPath(int[][] map, Node startNode, Node endNode) {
+    public List<Node> calcPath(int[][] map, Node startNode, Node endNode) {
         openList.clear();
         closedList.clear();
         path.clear();
@@ -123,7 +123,7 @@ public class AStarPathFinder {
         return iRow >= 0 && iRow < map.length && iCol >= 0 && iCol < map[0].length;
     }
 
-    public static Node getLowestCostNodeFromOpenList() {
+    public Node getLowestCostNodeFromOpenList() {
         int lowestCost = Integer.MAX_VALUE;
         int iLowestCost = -1;
         for (int i = 0; i < openList.size(); i++) {
@@ -135,7 +135,7 @@ public class AStarPathFinder {
         return openList.get(iLowestCost);
     }
 
-    public static boolean isInClosedList(int iRow, int iCol) {
+    public boolean isInClosedList(int iRow, int iCol) {
         boolean isInClosedList = false;
         if (!closedList.isEmpty()) {
             for (Node node : closedList) {
@@ -147,7 +147,7 @@ public class AStarPathFinder {
         return isInClosedList;
     }
 
-    public static Node getNodeFromOpenList(int iRow, int iCol) {
+    public Node getNodeFromOpenList(int iRow, int iCol) {
         Node nodeToReturn = null;
         if (!openList.isEmpty()) {
             for (Node node : openList) {
