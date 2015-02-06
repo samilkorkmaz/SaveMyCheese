@@ -11,6 +11,9 @@ import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JPanel;
@@ -18,6 +21,7 @@ import model.Map2D;
 import model.MouseThread;
 import model.MyRectangle;
 import model.Node;
+import sun.awt.image.ToolkitImage;
 
 /**
  *
@@ -92,7 +96,15 @@ public class CanvasPanel extends JPanel {
                 g2.draw(pathCell);
             }
             Point ap = mouseThread.getActivePointXY();
-            g2.drawImage(mouseImage, ap.x - mouseImageHalfWidth + MouseThread.getRectWidth() / 2,
+
+            // Rotation information
+            double locationX = mouseImageHalfWidth;
+            double locationY = mouseImageHalfHeight;
+            AffineTransform tx = AffineTransform.getRotateInstance(mouseThread.getImageRotation_rad(), locationX, locationY);
+            AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
+
+            // Drawing the rotated image at the required drawing locations
+            g2.drawImage(op.filter(((ToolkitImage) mouseImage).getBufferedImage(), null), ap.x - mouseImageHalfWidth + MouseThread.getRectWidth() / 2,
                     ap.y - mouseImageHalfHeight + MouseThread.getRectHeight() / 2, null);
         }
     }

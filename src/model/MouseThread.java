@@ -43,6 +43,7 @@ public class MouseThread extends Thread implements Runnable {
     private static BufferedImage mouseImage;
     private static int rectHeight;
     private static int rectWidth;
+    private double imageRotation_rad;
 
     public static int getRectWidth() {
         return rectWidth;
@@ -50,6 +51,11 @@ public class MouseThread extends Thread implements Runnable {
 
     public static int getRectHeight() {
         return rectHeight;
+    }
+    
+    public double getImageRotation_rad() {
+        return imageRotation_rad;
+        
     }
 
     public static Image getMouseImage() {
@@ -211,6 +217,7 @@ public class MouseThread extends Thread implements Runnable {
             double dyNode = nextNodeY - currentNodeY;
             int dx = (int)Math.round(dxNode / nDivisions);
             int dy = (int)Math.round(dyNode / nDivisions);
+            imageRotation_rad = Math.atan2(dyNode, dxNode) - Math.PI/2;
 
             for (int iDiv = 0; iDiv < nDivisions; iDiv++) {
                 //linear interpolation of mouse position between two nodes
