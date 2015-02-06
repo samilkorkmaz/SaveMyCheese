@@ -51,10 +51,10 @@ public class MouseThread extends Thread implements Runnable {
     public static int getRectHeight() {
         return rectHeight;
     }
-    
+
     public double getImageRotation_rad() {
         return imageRotation_rad;
-        
+
     }
 
     public static Image getMouseImage() {
@@ -217,14 +217,14 @@ public class MouseThread extends Thread implements Runnable {
             int nextNodeY = nextNode.getRowIndex() * rectHeight;
             double dxNode = nextNodeX - currentNodeX;
             double dyNode = nextNodeY - currentNodeY;
-            int dx = (int)Math.round(dxNode / nDivisions);
-            int dy = (int)Math.round(dyNode / nDivisions);
+            int dx = (int) Math.round(dxNode / nDivisions);
+            int dy = (int) Math.round(dyNode / nDivisions);
             if (dx == 0 && dy == 0) {
-                System.out.print("currentNode.getRowIndex()"+currentNode.getRowIndex()+", currentNode.getColIndex() = " + currentNode.getColIndex());
-                System.out.println(", nextNode.getRowIndex()"+nextNode.getRowIndex()+", nextNode.getColIndex() = " + nextNode.getColIndex());
+                System.out.print("currentNode.getRowIndex() = " + currentNode.getRowIndex() + ", currentNode.getColIndex() = " + currentNode.getColIndex());
+                System.out.println(", nextNode.getRowIndex() = " + nextNode.getRowIndex() + ", nextNode.getColIndex() = " + nextNode.getColIndex());
                 throw new IllegalArgumentException("dx/dy zero. Decrease nDivisions!");
             }
-            imageRotation_rad = Math.atan2(dyNode, dxNode) - Math.PI/2;
+            imageRotation_rad = Math.atan2(dyNode, dxNode) - Math.PI / 2;
 
             for (int iDiv = 0; iDiv < nDivisions && keepRunning; iDiv++) {
                 //linear interpolation of mouse position between two nodes                
