@@ -21,7 +21,6 @@ import model.Map2D;
 import model.MouseThread;
 import model.MyRectangle;
 import model.Node;
-import sun.awt.image.ToolkitImage;
 
 /**
  *
@@ -104,9 +103,33 @@ public class CanvasPanel extends JPanel {
             AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
 
             // Drawing the rotated image at the required drawing locations
-            g2.drawImage(op.filter(((ToolkitImage) mouseImage).getBufferedImage(), null), ap.x - mouseImageHalfWidth + MouseThread.getRectWidth() / 2,
+            g2.drawImage(op.filter(toBufferedImage(mouseImage), null), ap.x - mouseImageHalfWidth + MouseThread.getRectWidth() / 2,
                     ap.y - mouseImageHalfHeight + MouseThread.getRectHeight() / 2, null);
         }
+    }
+
+    /**
+     * Converts a given Image into a BufferedImage.<br/>
+     * Reference: http://stackoverflow.com/questions/13605248/java-converting-image-to-bufferedimage
+     *
+     * @param img The Image to be converted
+     * @return The converted BufferedImage
+     */
+    public static BufferedImage toBufferedImage(Image img) {
+        if (img instanceof BufferedImage) {
+            return (BufferedImage) img;
+        }
+
+        // Create a buffered image with transparency
+        BufferedImage bimage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+
+        // Draw the image on to the buffered image
+        Graphics2D bGr = bimage.createGraphics();
+        bGr.drawImage(img, 0, 0, null);
+        bGr.dispose();
+
+        // Return the buffered image
+        return bimage;
     }
 
     private int get1DIndex(int iRow, int iCol) {
