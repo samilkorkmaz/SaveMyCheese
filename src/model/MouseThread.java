@@ -221,6 +221,9 @@ public class MouseThread extends Thread implements Runnable {
             double dyNode = nextNodeY - currentNodeY;
             int dx = (int)Math.round(dxNode / nDivisions);
             int dy = (int)Math.round(dyNode / nDivisions);
+            if (dx == 0 || dy == 0) {
+                throw new IllegalArgumentException("dx/dy zero. Decrease nDivisions!");
+            }
             imageRotation_rad = Math.atan2(dyNode, dxNode) - Math.PI/2;
 
             for (int iDiv = 0; iDiv < nDivisions && keepRunning; iDiv++) {
