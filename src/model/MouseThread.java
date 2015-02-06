@@ -147,8 +147,7 @@ public class MouseThread extends Thread implements Runnable {
         Node startNode = new Node(null, iActiveRow, iActiveCol);
         Node endNode = new Node(null, CanvasPanel.CHEESE_IROW, CanvasPanel.CHEESE_ICOL);
         setActivePoint(startNode.getRowIndex(), startNode.getColIndex());
-        AStarPathFinder as = new AStarPathFinder();
-        this.path = as.calcPath(mapArray2D, startNode, endNode);
+        this.path = new AStarPathFinder().calcPath(mapArray2D, startNode, endNode);
     }
 
     public static void createMap(int width, int height) {
@@ -206,7 +205,13 @@ public class MouseThread extends Thread implements Runnable {
         int nDivisions = 10;
         Node currentNode = path.get(path.size() - 1);
         Node nextNode = path.get(path.size() - 2);
-        for (int iPath = path.size() - 2; iPath >= 1; iPath--) {
+        for (int iPath = path.size() - 2; iPath >= 1 && keepRunning; iPath--) {
+            if (iPath == 1) {
+                //mouse reached cheese, game over
+                System.out.println("iThread : " + iThread + ", path.size = " + path.size());
+                CanvasPanel.onMouseReachedCheese();
+                
+            }
             setActivePoint(currentNode.getRowIndex(), currentNode.getColIndex());
             int currentNodeX = currentNode.getColIndex() * rectWidth;
             int currentNodeY = currentNode.getRowIndex() * rectHeight;
@@ -218,11 +223,8 @@ public class MouseThread extends Thread implements Runnable {
             int dy = (int)Math.round(dyNode / nDivisions);
             imageRotation_rad = Math.atan2(dyNode, dxNode) - Math.PI/2;
 
-            for (int iDiv = 0; iDiv < nDivisions; iDiv++) {
-                //linear interpolation of mouse position between two nodes
-                if (!keepRunning) {
-                    break;
-                }
+            for (int iDiv = 0; iDiv < nDivisions && keepRunning; iDiv++) {
+                //linear interpolation of mouse position between two nodes                
                 setActivePointXY(currentNodeX + iDiv * dx, currentNodeY + iDiv * dy);
                 try {
                     Thread.sleep(SLEEP_TIME_MS);
@@ -233,19 +235,6 @@ public class MouseThread extends Thread implements Runnable {
             currentNode = nextNode;
             nextNode = path.get(iPath - 1);
         }
-
-        /*for (int i = path.size() - 1; i >= 0; i--) {
-         if (!keepRunning) {
-         break;
-         }
-         Node currentNode = path.get(i);
-         setActivePoint(currentNode.getRowIndex(), currentNode.getColIndex());
-         try {
-         Thread.sleep(SLEEP_TIME_MS);
-         } catch (InterruptedException ex) {
-         Logger.getLogger(MouseThread.class.getName()).log(Level.SEVERE, null, ex);
-         }
-         }*/
         System.out.println("END: " + iThread + ". mouse thread ended.");
     }
 

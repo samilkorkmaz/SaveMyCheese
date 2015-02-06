@@ -179,6 +179,13 @@ public class CanvasPanel extends JPanel {
         }
         instance.repaint();
     }
+    
+    public static void onMouseReachedCheese() {
+        for (MouseThread mouseThread : mouseThreadList) {
+            mouseThread.setKeepRunning(false); //kill thread
+        }
+        GameView.setLevelFail();
+    }
 
     public static void resetMap() {
         MouseThread.resetMap();
@@ -189,7 +196,7 @@ public class CanvasPanel extends JPanel {
         for (int i = 0; i < N_MOUSE_THREAD; i++) {
             MouseThread mouseThread = new MouseThread(counterThread++);
             mouseThreadList.add(mouseThread);
-            mouseThread.setActivePoint(0, i * 10); //TODO
+            mouseThread.setActivePoint(0, i * 23); //TODO
             mouseThread.updatePath();
             mouseThread.start();
         }
@@ -201,7 +208,7 @@ public class CanvasPanel extends JPanel {
         for (int i = 0; i < N_MOUSE_THREAD; i++) {
             MouseThread mt = new MouseThread(counterThread++);
             mouseThreadList.add(mt);
-            mt.setActivePoint(0, i * 10); //TODO
+            mt.setActivePoint(0, i * 23); //TODO
             mt.updatePath();
             mt.start();
         }

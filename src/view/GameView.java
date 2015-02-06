@@ -12,7 +12,6 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import model.MouseThread;
 
 /**
  * Game screen.
@@ -37,6 +36,9 @@ public class GameView extends JPanel {
     private static final java.awt.Font BUTTON_FONT = new java.awt.Font("Tahoma", 1, 12);
     private static final java.awt.Font LEVEL_SUCCESS_FONT = new java.awt.Font("Tahoma", 1, 24);
     private static final String SUCCESS_TEXT = "Level completed successfully!";
+    private static final String FAIL_TEXT = "Game over: Mouse ate the cheese!";
+    private static final Color SUCCESS_COLOR = Color.BLUE;
+    private static final Color FAIL_COLOR = Color.RED;
     private static final JLabel jlSuccessFail = new JLabel();
 
     @Override
@@ -120,7 +122,14 @@ public class GameView extends JPanel {
     }
 
     public static void setLevelSuccess() {
+        jlSuccessFail.setForeground(SUCCESS_COLOR);
         jlSuccessFail.setText(SUCCESS_TEXT);
+        jbNext.setEnabled(true);
+    }
+    
+    public static void setLevelFail() {
+        jlSuccessFail.setForeground(FAIL_COLOR);
+        jlSuccessFail.setText(FAIL_TEXT);
         jbNext.setEnabled(true);
     }
 }
