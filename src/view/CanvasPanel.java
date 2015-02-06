@@ -160,26 +160,34 @@ public class CanvasPanel extends JPanel {
         return instance;
     }
 
-    public static void updateMap(Shape shape) {
-        MouseThread.updateMap(shape);
-        List<MouseThread.RectRowCol> prevActivePointList = new ArrayList<>();
+    private static void killAllThreads() {
         for (MouseThread mouseThread : mouseThreadList) {
-            MouseThread.RectRowCol prevActivePoint = mouseThread.getActivePoint();
-            prevActivePointList.add(prevActivePoint);
             mouseThread.setKeepRunning(false); //kill thread
         }
-        mouseThreadList.clear();
-        for (int i = 0; i < N_MOUSE_THREAD; i++) {
-            MouseThread.RectRowCol prevActivePoint = prevActivePointList.get(i);
-            MouseThread mouseThread = new MouseThread(counterThread++);
-            mouseThreadList.add(mouseThread);
-            mouseThread.setActivePoint(prevActivePoint);
-            mouseThread.updatePath();
-            mouseThread.start();
+    }
+
+    public static void updateMapAndPaths(Shape shape) {
+        killAllThreads();
+        if (!GameController.isAllSnapped()) { //do not do the following if all is snapped because it causes the success message to lag
+            MouseThread.updateMap(shape);
+            List<MouseThread.RectRowCol> prevActivePointList = new ArrayList<>();
+            for (MouseThread mouseThread : mouseThreadList) {
+                MouseThread.RectRowCol prevActivePoint = mouseThread.getActivePoint();
+                prevActivePointList.add(prevActivePoint);
+            }
+            mouseThreadList.clear();
+            for (int i = 0; i < N_MOUSE_THREAD; i++) {
+                MouseThread.RectRowCol prevActivePoint = prevActivePointList.get(i);
+                MouseThread mouseThread = new MouseThread(counterThread++);
+                mouseThreadList.add(mouseThread);
+                mouseThread.setActivePoint(prevActivePoint);
+                mouseThread.updatePath();
+                mouseThread.start();
+            }
         }
         instance.repaint();
     }
-    
+
     public static void onMouseReachedCheese() {
         for (MouseThread mouseThread : mouseThreadList) {
             mouseThread.setKeepRunning(false); //kill thread

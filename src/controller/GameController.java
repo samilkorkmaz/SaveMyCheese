@@ -80,9 +80,9 @@ public class GameController {
             boolean isSnapped = selectedPolygon.isCloseTo(selectedSnapPolygon);
             selectedPolygon.setIsSnapped(isSnapped);
             if (isSnapped) {
-                CanvasPanel.updateMap(selectedPolygon);
+                checkAllSnapped();
+                CanvasPanel.updateMapAndPaths(selectedPolygon);
             }
-            checkAllSnapped();
         } else {
             selectedPolygon = null;
             selectedSnapPolygon = null;
