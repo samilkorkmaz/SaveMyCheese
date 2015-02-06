@@ -6,6 +6,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.event.MouseAdapter;
@@ -84,14 +85,15 @@ public class CanvasPanel extends JPanel {
                 MyRectangle pathCell = MouseThread.getMapCellList().get(get1DIndex(pathNode.getRowIndex(), pathNode.getColIndex()));
                 MouseThread.RectRowCol activePathPoint = mouseThread.getActivePoint();
                 if (pathNode.getRowIndex() == activePathPoint.rowIndex && pathNode.getColIndex() == activePathPoint.colIndex) {
-                    g2.setColor(CURRENT_NODE_COLOR);                    
-                    g2.drawImage(mouseImage, pathCell.x - mouseImageHalfWidth + pathCell.width/2, 
-                            pathCell.y - mouseImageHalfHeight + pathCell.height/2, null);
+                    g2.setColor(CURRENT_NODE_COLOR);
                 } else {
                     g2.setColor(PATH_COLOR);
                 }
                 g2.draw(pathCell);
             }
+            Point ap = mouseThread.getActivePointXY();
+            g2.drawImage(mouseImage, ap.x - mouseImageHalfWidth + MouseThread.getRectWidth() / 2,
+                    ap.y - mouseImageHalfHeight + MouseThread.getRectHeight() / 2, null);
         }
     }
 
@@ -122,7 +124,7 @@ public class CanvasPanel extends JPanel {
         }
         return instance;
     }
-    
+
     public static void updateMap(Shape shape) {
         MouseThread.updateMap(shape);
         List<MouseThread.RectRowCol> prevActivePointList = new ArrayList<>();
@@ -132,7 +134,7 @@ public class CanvasPanel extends JPanel {
             mouseThread.setKeepRunning(false); //kill thread
         }
         mouseThreadList.clear();
-        for (int i=0; i < N_MOUSE_THREAD; i++) {
+        for (int i = 0; i < N_MOUSE_THREAD; i++) {
             MouseThread.RectRowCol prevActivePoint = prevActivePointList.get(i);
             MouseThread mouseThread = new MouseThread(counterThread++);
             mouseThreadList.add(mouseThread);
@@ -173,8 +175,8 @@ public class CanvasPanel extends JPanel {
     private CanvasPanel(int x, int y, int width, int height) {
         super();
         mouseImage = MouseThread.getMouseImage();
-        mouseImageHalfWidth = mouseImage.getWidth(null)/2;
-        mouseImageHalfHeight = mouseImage.getHeight(null)/2;
+        mouseImageHalfWidth = mouseImage.getWidth(null) / 2;
+        mouseImageHalfHeight = mouseImage.getHeight(null) / 2;
         createMouseList(width, height);
         setBounds(x, y, width, height);
         setLayout(null);
