@@ -208,9 +208,7 @@ public class MouseThread extends Thread implements Runnable {
         for (int iPath = path.size() - 2; iPath >= 1 && keepRunning; iPath--) {
             if (iPath == 1) {
                 //mouse reached cheese, game over
-                System.out.println("iThread : " + iThread + ", path.size = " + path.size());
                 CanvasPanel.onMouseReachedCheese();
-                
             }
             setActivePoint(currentNode.getRowIndex(), currentNode.getColIndex());
             int currentNodeX = currentNode.getColIndex() * rectWidth;
