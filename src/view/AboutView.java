@@ -30,7 +30,8 @@ public class AboutView extends JPanel {
     private static AboutView instance;
     private static final JFrame frame = new JFrame("About - Save My Cheese");
     private static final JTextArea jtaInfo = new JTextArea("Save My Cheese version 1.0."
-            + "\nAuthor: Samil Korkmaz\nDate: February 2015");
+            + "\nAuthor: Samil Korkmaz\nDate: February 2015"
+            + "\n\nMouse image: http://free.clipartof.com/details/57-Free-Cartoon-Gray-Field-Mouse-Clipart-Illustration");
     private static final String BLOG_URL = "http://samilkorkmaz.blogspot.com";
     private static final JButton jbBack = new JButton("Back");
     private static final JButton jbBlog = new JButton(BLOG_URL);
