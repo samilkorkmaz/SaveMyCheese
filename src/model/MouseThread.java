@@ -57,6 +57,10 @@ public class MouseThread extends Thread implements Runnable {
 
     }
 
+    /**
+     * Image source: http://free.clipartof.com/details/57-Free-Cartoon-Gray-Field-Mouse-Clipart-Illustration
+     * @return 
+     */
     public static Image getMouseImage() {
         if (mouseImage == null) {
             try {
