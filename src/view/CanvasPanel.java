@@ -12,8 +12,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import javax.swing.JPanel;
 import model.Map2D;
 import model.MouseThread;
@@ -49,6 +47,9 @@ public class CanvasPanel extends JPanel {
     private static final int N_MOUSE_THREAD = 3;
     private static int counterThread = 0;
     private static final List<MouseThread> mouseThreadList = new ArrayList<>();
+    private static Image mouseImage;
+    private static int mouseImageHalfWidth;
+    private static int mouseImageHalfHeight;
 
     public static void refreshDrawing() {
         if (instance != null) {
@@ -79,18 +80,17 @@ public class CanvasPanel extends JPanel {
     private void drawPaths(Graphics2D g2) {
         for (int i = 0; i < mouseThreadList.size(); i++) {
             MouseThread mouseThread = mouseThreadList.get(i);
-            for (Node node : mouseThread.getPath()) {
-                MyRectangle cell = MouseThread.getMapCellList().get(get1DIndex(node.getRowIndex(), node.getColIndex()));
-                MouseThread.RectRowCol activePoint = mouseThread.getActivePoint();
-                if (node.getRowIndex() == activePoint.rowIndex && node.getColIndex() == activePoint.colIndex) {
-                    g2.setColor(CURRENT_NODE_COLOR);
-                    Image mouseImage = MouseThread.getMouseImage();
-                    g2.drawImage(mouseImage, cell.x - mouseImage.getWidth(null)/2 + cell.width/2, 
-                            cell.y - mouseImage.getHeight(null)/2 + cell.height/2, null);
+            for (Node pathNode : mouseThread.getPath()) {
+                MyRectangle pathCell = MouseThread.getMapCellList().get(get1DIndex(pathNode.getRowIndex(), pathNode.getColIndex()));
+                MouseThread.RectRowCol activePathPoint = mouseThread.getActivePoint();
+                if (pathNode.getRowIndex() == activePathPoint.rowIndex && pathNode.getColIndex() == activePathPoint.colIndex) {
+                    g2.setColor(CURRENT_NODE_COLOR);                    
+                    g2.drawImage(mouseImage, pathCell.x - mouseImageHalfWidth + pathCell.width/2, 
+                            pathCell.y - mouseImageHalfHeight + pathCell.height/2, null);
                 } else {
                     g2.setColor(PATH_COLOR);
                 }
-                g2.draw(cell);
+                g2.draw(pathCell);
             }
         }
     }
@@ -172,6 +172,9 @@ public class CanvasPanel extends JPanel {
 
     private CanvasPanel(int x, int y, int width, int height) {
         super();
+        mouseImage = MouseThread.getMouseImage();
+        mouseImageHalfWidth = mouseImage.getWidth(null)/2;
+        mouseImageHalfHeight = mouseImage.getHeight(null)/2;
         createMouseList(width, height);
         setBounds(x, y, width, height);
         setLayout(null);
