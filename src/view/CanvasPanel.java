@@ -160,6 +160,19 @@ public class CanvasPanel extends JPanel {
         return instance;
     }
 
+    public static void pauseAllThreads() {
+        MouseThread.setIsBusy(true);
+    }
+
+    public static void continueAllThreads() {
+        MouseThread.setIsBusy(false);
+        for (MouseThread mouseThread : mouseThreadList) {
+            synchronized (mouseThread.getLock()) {
+                mouseThread.getLock().notify();
+            }
+        }
+    }
+
     private static void killAllThreads() {
         for (MouseThread mouseThread : mouseThreadList) {
             mouseThread.setKeepRunning(false); //kill thread

@@ -27,6 +27,14 @@ public class GameController {
     public static void start() {
         init();
     }
+    
+    public static void pause() {
+        CanvasPanel.pauseAllThreads();
+    }
+    
+    public static void continueGame() {
+        CanvasPanel.continueAllThreads();
+    }
 
     public static void deselectShape() {
         selectedPolygon = null;

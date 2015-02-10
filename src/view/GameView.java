@@ -40,6 +40,7 @@ public class GameView extends JPanel {
     private static final Color SUCCESS_COLOR = Color.BLUE;
     private static final Color FAIL_COLOR = Color.RED;
     private static final JLabel jlSuccessFail = new JLabel();
+    private static boolean isPause = true;
 
     @Override
     public final Dimension getPreferredSize() {
@@ -89,7 +90,17 @@ public class GameView extends JPanel {
         jbBack.setFont(BUTTON_FONT);
 
         jbStartPause.addActionListener((java.awt.event.ActionEvent evt) -> {
-            System.out.println("start");
+            if(isPause) {
+                GameController.pause();
+            } else {
+                GameController.continueGame();
+            }
+            isPause = !isPause;
+            if(isPause) {
+                jbStartPause.setText("Pause");
+            } else {
+                jbStartPause.setText("Continue");
+            }
         });
 
         jbRestart.addActionListener((ActionEvent ae) -> {

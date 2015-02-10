@@ -31,7 +31,7 @@ public class MouseThread extends Thread implements Runnable {
     private boolean keepRunning = true;
     public static final int N_MAP_ROWS = 50;
     public static final int N_MAP_COLS = 60;
-    private static final int SLEEP_TIME_MS = 50;
+    private static final int SLEEP_TIME_MS = 2*50;
     private List<Node> path; //starts from endNode and ends at startNode
     private static int[][] mapArray2D;
     private static final List<MyRectangle> mapCellList = new ArrayList<>();
@@ -43,6 +43,17 @@ public class MouseThread extends Thread implements Runnable {
     private static int rectHeight;
     private static int rectWidth;
     private double imageRotation_rad;
+    private static boolean isBusy = false;
+    private Object lock = new Object();
+    
+    public Object getLock() {
+        return lock;
+    }
+    
+    public static void setIsBusy(boolean inIsBusy) {
+        isBusy = inIsBusy;
+    }
+    
 
     public static int getRectWidth() {
         return rectWidth;
@@ -231,6 +242,17 @@ public class MouseThread extends Thread implements Runnable {
             imageRotation_rad = Math.atan2(dyNode, dxNode) - Math.PI / 2;
 
             for (int iDiv = 0; iDiv < nDivisions && keepRunning; iDiv++) {
+                if (isBusy) {
+                    synchronized(lock) {
+                        try {
+                            lock.wait();
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(MouseThread.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                    
+                }
+                
                 //linear interpolation of mouse position between two nodes                
                 setActivePointXY(currentNodeX + iDiv * dx, currentNodeY + iDiv * dy);
                 try {
