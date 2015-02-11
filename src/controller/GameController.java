@@ -112,31 +112,33 @@ public class GameController {
         CanvasPanel.setGameOver(false);
         polygonList.clear();
         snapPolygonList.clear();
-        /*for (int i = 0; i < 3; i++) {
-         int[] xCoords = {0, 60, 120, 100, 20};
-         int[] yCoords = {50, 0, 50, 125, 125};
-         MyPolygon myPolygon = new MyPolygon(xCoords, yCoords, xCoords.length);
-         myPolygon.translate(i * 50, i * 50);
-         polygonList.add(myPolygon);
-
-         MyPolygon snapPolygon = new MyPolygon(xCoords, yCoords, xCoords.length);
-         snapPolygon.translate(200 + i * 50, 20 + i * 50);
-         snapPolygonList.add(snapPolygon);
-         }*/
-        addToList(new int[]{110, 157, 174, 157, 110, 127}, new int[]{90, 90, 126, 162, 162, 126}, 351, 67 + 120);
-        addToList(new int[]{110, 134, 215, 238}, new int[]{90, 43 + 94, 43 + 94, 90}, 270, 139 + 120);
-        addToList(new int[]{110, 134, 215, 238}, new int[]{90, 43, 43, 90}, 270, 20 + 120);
-        addToList(new int[]{110, 157, 140, 157, 110, 93}, new int[]{90, 90, 126, 162, 162, 126}, 253, 67 + 120);
+        
+        addToList(new int[]{110, 157, 174, 157, 110, 127}, new int[]{90, 90, 126, 162, 162, 126}, 351, 67 + 120, 1);
+        addToList(new int[]{110, 134, 215, 238}, new int[]{90, 43 + 94, 43 + 94, 90}, 270, 139 + 120, 1);
+        addToList(new int[]{110, 134, 215, 238}, new int[]{90, 43, 43, 90}, 270, 20 + 120, 1);
+        addToList(new int[]{110, 157, 140, 157, 110, 93}, new int[]{90, 90, 126, 162, 162, 126}, 253, 67 + 120, 1);
+        
+        //addToList(new int[]{110, 157, 174, 157, 110, 127}, new int[]{90, 90, 126, 162, 162, 126}, 351, 67 + 120, 0.5);
     }
 
-    private static void addToList(int[] xCoords, int[] yCoords, int xSnap, int ySnap) {
-        MyPolygon myPolygon = new MyPolygon(xCoords, yCoords, xCoords.length);
+    private static void addToList(int[] xCoords, int[] yCoords, int xSnap, int ySnap, double scale) {
+        int[] scaledXCoords = multiplyArray(xCoords, scale);
+        int[] scaledYCoords = multiplyArray(yCoords, scale);
+        MyPolygon myPolygon = new MyPolygon(scaledXCoords, scaledYCoords, scaledXCoords.length);
         myPolygon.translate(10, 350);
         polygonList.add(myPolygon);
 
-        MyPolygon snapPolygon = new MyPolygon(xCoords, yCoords, xCoords.length);
+        MyPolygon snapPolygon = new MyPolygon(scaledXCoords, scaledYCoords, scaledXCoords.length);
         snapPolygon.translate(xSnap, ySnap);
         snapPolygonList.add(snapPolygon);
+    }
+    
+    private static int[] multiplyArray(int[] array, double c) {
+        int[] newArray = new int[array.length];
+        for (int i = 0; i < array.length; i++) {
+            newArray[i] = (int)Math.round(array[i] * c);
+        }
+        return newArray;
     }
 
 }
