@@ -77,7 +77,7 @@ public class MouseThread extends Thread implements Runnable {
     public static Image getMouseImage() {
         if (mouseImage == null) {
             try {
-                mouseImage = ImageIO.read(MouseThread.class.getResource("/Mouse.png"));
+                mouseImage = ImageIO.read(MouseThread.class.getResource("/images/Mouse.png"));
             } catch (IOException ex) {
                 Logger.getLogger(MouseThread.class.getName()).log(Level.SEVERE, null, ex);
             }

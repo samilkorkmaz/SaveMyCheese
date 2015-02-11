@@ -22,9 +22,7 @@ import javax.swing.JPanel;
  */
 public class WelcomeView extends JPanel {
 
-    //public static final File ICON = new File("./images/icon - save my cheese.png");
-    //public static final ImageIcon ICON = new ImageIcon(WelcomeView.class.getResource("icon - save my cheese.png"));
-    public static final URL ICON = WelcomeView.class.getResource("/icon - save my cheese.png");
+    public static final URL ICON = WelcomeView.class.getResource("/images/icon - save my cheese.png");
     private static final int PREF_WIDTH = 400;
     private static final int PREF_HEIGHT = 200;
     private static WelcomeView instance;
