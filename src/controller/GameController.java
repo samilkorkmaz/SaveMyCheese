@@ -109,6 +109,7 @@ public class GameController {
      * Initialize game (create puzzle pieces etc.).
      */
     private static void init() {
+        CanvasPanel.setGameOver(false);
         polygonList.clear();
         snapPolygonList.clear();
         /*for (int i = 0; i < 3; i++) {

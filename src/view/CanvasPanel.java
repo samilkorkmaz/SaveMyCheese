@@ -54,6 +54,11 @@ public class CanvasPanel extends JPanel {
     private static Image mouseImage;
     private static int mouseImageHalfWidth;
     private static int mouseImageHalfHeight;
+    private static boolean isGameOver = false;
+    
+    public static void setGameOver(boolean inIsGameOver) {
+        isGameOver = inIsGameOver;
+    }
 
     public static void refreshDrawing() {
         if (instance != null) {
@@ -205,6 +210,7 @@ public class CanvasPanel extends JPanel {
         for (MouseThread mouseThread : mouseThreadList) {
             mouseThread.setKeepRunning(false); //kill thread
         }
+        setGameOver(true);
         GameView.setLevelFail();
     }
 
@@ -261,7 +267,7 @@ public class CanvasPanel extends JPanel {
 
         @Override
         public void mouseDragged(MouseEvent evt) {
-            if (mouseIsInCanvas(evt)) {
+            if (!isGameOver && mouseIsInCanvas(evt)) {
                 GameController.moveShape(evt.getX(), evt.getY());
             }
             repaint();
