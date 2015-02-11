@@ -28,6 +28,7 @@ import view.CanvasPanel;
  */
 public class MouseThread extends Thread implements Runnable {
 
+    private static final double DOUBLE_TOLERANCE = 1e-15;
     private boolean keepRunning = true;
     public static final int N_MAP_ROWS = 50;
     public static final int N_MAP_COLS = 60;
@@ -43,8 +44,9 @@ public class MouseThread extends Thread implements Runnable {
     private static int rectHeight;
     private static int rectWidth;
     private double imageRotation_rad;
+    private double prevImageRotation_rad = 0;
     private static boolean isBusy = false;
-    private Object lock = new Object();
+    private final Object lock = new Object();
     
     public Object getLock() {
         return lock;
@@ -240,7 +242,8 @@ public class MouseThread extends Thread implements Runnable {
                 System.out.println(", nextNode.getRowIndex() = " + nextNode.getRowIndex() + ", nextNode.getColIndex() = " + nextNode.getColIndex());
                 throw new IllegalArgumentException("dx/dy zero. Decrease nDivisions!");
             }
-            imageRotation_rad = Math.atan2(dyNode, dxNode) - Math.PI / 2;
+            double currentImageRotation_rad = Math.atan2(dyNode, dxNode) - Math.PI / 2;
+            double dRotation_rad = (currentImageRotation_rad - prevImageRotation_rad) / nDivisions;
 
             for (int iDiv = 0; iDiv < nDivisions && keepRunning; iDiv++) {
                 if (isBusy) {
@@ -251,10 +254,9 @@ public class MouseThread extends Thread implements Runnable {
                             Logger.getLogger(MouseThread.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }
-                    
                 }
-                
-                //linear interpolation of mouse position between two nodes                
+                //linear interpolation of mouse rotation and position between two nodes
+                imageRotation_rad = prevImageRotation_rad + iDiv * dRotation_rad;
                 setActivePointXY(currentNodeX + iDiv * dx, currentNodeY + iDiv * dy);
                 try {
                     Thread.sleep(SLEEP_TIME_MS);
@@ -264,8 +266,13 @@ public class MouseThread extends Thread implements Runnable {
             }
             currentNode = nextNode;
             nextNode = path.get(iPath - 1);
+            prevImageRotation_rad = currentImageRotation_rad;
         }
         System.out.println("END: " + iThread + ". mouse thread ended.");
+    }
+    
+    public static boolean isEqualDoubles(double d1, double d2) {
+        return Math.abs(d2-d1) <= DOUBLE_TOLERANCE;
     }
 
 }
