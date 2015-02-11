@@ -131,7 +131,7 @@ public class MouseThread extends Thread implements Runnable {
         System.out.println(iThread + ". mouse thread created.");
     }
 
-    public void setActivePointXY(int x, int y) {
+    private void setActivePointXY(int x, int y) {
         activePoint.x = x;
         activePoint.y = y;
         CanvasPanel.refreshDrawing();
@@ -144,6 +144,7 @@ public class MouseThread extends Thread implements Runnable {
     public void setActivePoint(int iRow, int iCol) {
         iActiveRow = iRow;
         iActiveCol = iCol;
+        setActivePointXY(iCol * rectWidth, iRow * rectHeight);
         CanvasPanel.refreshDrawing();
     }
 
