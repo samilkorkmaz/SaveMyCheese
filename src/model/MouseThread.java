@@ -10,7 +10,6 @@ import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageFilter;
 import java.awt.image.ImageProducer;
 import java.awt.image.RGBImageFilter;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +25,7 @@ import view.CanvasPanel;
  * @date January 2015
  * @license Public Domain
  */
-public class MouseThread extends Thread implements Runnable {
+public class MouseThread extends Thread {
 
     private static final double DOUBLE_TOLERANCE = 1e-15;
     private boolean keepRunning = true;
