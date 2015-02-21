@@ -2,13 +2,11 @@ package view;
 
 import java.awt.Dimension;
 import java.awt.event.WindowEvent;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -22,7 +20,8 @@ import javax.swing.JPanel;
  */
 public class WelcomeView extends JPanel {
 
-    public static final URL ICON = WelcomeView.class.getResource("/images/icon - save my cheese.png");
+    public static final String IMAGE_DIR = "/resources/images/";
+    public static final URL ICON = WelcomeView.class.getResource(IMAGE_DIR + "icon - save my cheese.png");
     private static final int PREF_WIDTH = 400;
     private static final int PREF_HEIGHT = 200;
     private static WelcomeView instance;

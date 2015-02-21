@@ -17,6 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import view.CanvasPanel;
+import view.WelcomeView;
 
 /**
  * Mouse operations.
@@ -76,7 +77,7 @@ public class MouseThread extends Thread {
     public static Image getMouseImage() {
         if (mouseImage == null) {
             try {
-                mouseImage = ImageIO.read(MouseThread.class.getResource("/images/Mouse.png"));
+                mouseImage = ImageIO.read(MouseThread.class.getResource(WelcomeView.IMAGE_DIR + "Mouse.png"));
             } catch (IOException ex) {
                 Logger.getLogger(MouseThread.class.getName()).log(Level.SEVERE, null, ex);
             }
