@@ -20,7 +20,8 @@ import javax.swing.JPanel;
  */
 public class WelcomeView extends JPanel {
 
-    public static final String IMAGE_DIR = "/resources/images/";
+    public static final String IMAGE_DIR = "/resources/images/"; //Note: ImageIO.read expects "/" at the beginning of path
+    public static final String POLYGON_DIR = "resources/polygons/"; //Note: class.getClassLoader().getResourceAsStream does not want "/" at the beginning of path.
     public static final URL ICON = WelcomeView.class.getResource(IMAGE_DIR + "icon - save my cheese.png");
     private static final int PREF_WIDTH = 400;
     private static final int PREF_HEIGHT = 200;

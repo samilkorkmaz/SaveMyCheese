@@ -1,11 +1,18 @@
 package controller;
 
 import java.awt.Point;
-import java.util.List;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import model.MyPolygon;
 import view.CanvasPanel;
 import view.GameView;
+import view.WelcomeView;
 
 /**
  * Game controller.
@@ -23,15 +30,62 @@ public class GameController {
     private static int prevMouseX;
     private static int prevMouseY;
     private static boolean isAllSnapped;
+    private static int level = 1;
+    private static final int MAX_LEVEL = 2;
 
-    public static void start() {
-        init();
+    public static boolean isNotLastLevel() {
+        return level < MAX_LEVEL;
     }
     
+    public static int getLevel() {
+        return level;
+    }
+
+    public static void incLevel() {
+        level++;
+    }
+    
+    public static String getPolygonFileForCurrentLevel() {
+        String pf = "";
+        switch (level) {
+            case 1 :
+                pf = "level1.txt";
+                break;
+            case 2: 
+                pf = "level2.txt";
+                break;
+            default :
+                throw new IllegalArgumentException("Unknown level: " + level);
+        }
+        return pf;
+    }
+
+    public static void start() {
+        CanvasPanel.setGameOver(false);
+        polygonList.clear();
+        snapPolygonList.clear();
+
+        /*addToList(new int[]{110, 157, 174, 157, 110, 127}, new int[]{90, 90, 126, 162, 162, 126}, 351, 67 + 120, 1);
+         addToList(new int[]{110, 134, 215, 238}, new int[]{90, 43 + 94, 43 + 94, 90}, 270, 139 + 120, 1);
+         addToList(new int[]{110, 134, 215, 238}, new int[]{90, 43, 43, 90}, 270, 20 + 120, 1);
+         addToList(new int[]{110, 157, 140, 157, 110, 93}, new int[]{90, 90, 126, 162, 162, 126}, 253, 67 + 120, 1);*/
+        
+        /*addToList(new int[]{310, 309, 125, 197, 244, 199}, new int[]{486, 533, 674, 446, 434, 568}, 241, 258, 0.5);
+        addToList(new int[]{376, 422, 495, 310, 309, 420}, new int[]{434, 446, 674, 533, 486, 568}, 333, 258, 0.5);
+        addToList(new int[]{244, 197, 10, 239, 268, 133}, new int[]{434, 446, 306, 306, 351, 348}, 184, 194, 0.5);
+        addToList(new int[]{352, 380, 607, 422, 375, 486}, new int[]{351, 307, 305, 446, 434, 349}, 355, 194, 0.5);
+        addToList(new int[]{268, 240, 309, 380, 350, 309}, new int[]{351, 306, 78, 306, 351, 216}, 300, 80, 0.5);*/
+
+        List<PolygonData> pdList = getPolygonDataFromFile(getPolygonFileForCurrentLevel());
+        for (PolygonData pd : pdList) {
+            addToList(pd.xArray, pd.yArray, pd.xStart, pd.yStart, pd.scale);
+        }
+    }
+
     public static void pause() {
         CanvasPanel.pauseAllThreads();
     }
-    
+
     public static void continueGame() {
         CanvasPanel.continueAllThreads();
     }
@@ -105,20 +159,78 @@ public class GameController {
         return polygonList;
     }
 
-    /**
-     * Initialize game (create puzzle pieces etc.).
-     */
-    private static void init() {
-        CanvasPanel.setGameOver(false);
-        polygonList.clear();
-        snapPolygonList.clear();
-        
-        addToList(new int[]{110, 157, 174, 157, 110, 127}, new int[]{90, 90, 126, 162, 162, 126}, 351, 67 + 120, 1);
-        addToList(new int[]{110, 134, 215, 238}, new int[]{90, 43 + 94, 43 + 94, 90}, 270, 139 + 120, 1);
-        addToList(new int[]{110, 134, 215, 238}, new int[]{90, 43, 43, 90}, 270, 20 + 120, 1);
-        addToList(new int[]{110, 157, 140, 157, 110, 93}, new int[]{90, 90, 126, 162, 162, 126}, 253, 67 + 120, 1);
-        
-        //addToList(new int[]{110, 157, 174, 157, 110, 127}, new int[]{90, 90, 126, 162, 162, 126}, 351, 67 + 120, 0.5);
+    private static class PolygonData {
+
+        int[] xArray;
+        int[] yArray;
+        int xStart;
+        int yStart;
+        double scale;
+    }
+    
+    private static List<PolygonData> getPolygonDataFromFile(String fileName) {
+        //read file as String list:
+        InputStream is = GameController.class.getClassLoader().getResourceAsStream(WelcomeView.POLYGON_DIR + fileName);
+        List<String> dataStrList = getInputStreamAsStringList(is);
+        try {
+            is.close();
+        } catch (IOException ex) {
+            Logger.getLogger(GameController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        //extract polygon data from strings
+        List<PolygonData> pdList = new ArrayList<>();
+        for (int i = 0; i < dataStrList.size(); i++) {
+            if (i % 5 == 0) {
+                PolygonData pd = new PolygonData();
+                pd.xArray = getCoordArray(dataStrList.get(i));
+                pd.yArray = getCoordArray(dataStrList.get(i+1));
+                pd.xStart = getStart(dataStrList.get(i+2));
+                pd.yStart = getStart(dataStrList.get(i+3));
+                pd.scale = getScale(dataStrList.get(i+4));
+                pdList.add(pd);
+            }
+        }
+        return pdList;
+    }
+    
+    private static int getStart(String dataStr) {
+        String[] str = dataStr.split("=");
+        return Integer.parseInt(str[1].trim());
+    }
+    
+    private static double getScale(String dataStr) {
+        String[] str = dataStr.split("=");
+        return Double.parseDouble(str[1].trim());
+    }
+    
+    private static int[] getCoordArray(String dataStr) {
+        String[] str1 = dataStr.split("=");
+        String[] str2 = str1[1].split(",");
+        int[] coordArray = new int[str2.length];
+        for (int i = 0; i < str2.length; i++) {
+            coordArray[i] = Integer.parseInt(str2[i].trim());
+        }
+        return coordArray;
+    }
+
+    private static List<String> getInputStreamAsStringList(final InputStream is) {
+        String COMMENT_STRING_START = "//";
+        ArrayList<String> fileAsStringList = new ArrayList<>();
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        String s;
+        try {
+            while ((s = br.readLine()) != null) {
+                boolean isNotCommentLine = !s.trim().startsWith(COMMENT_STRING_START);
+                boolean isNotEmptyLine = !s.trim().isEmpty();
+                if (isNotCommentLine && isNotEmptyLine) {
+                    fileAsStringList.add(s);
+                }
+            }
+            br.close();
+        } catch (IOException ex) {
+            Logger.getLogger(GameController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return fileAsStringList;
     }
 
     private static void addToList(int[] xCoords, int[] yCoords, int xSnap, int ySnap, double scale) {
@@ -132,11 +244,11 @@ public class GameController {
         snapPolygon.translate(xSnap, ySnap);
         snapPolygonList.add(snapPolygon);
     }
-    
+
     private static int[] multiplyArray(int[] array, double c) {
         int[] newArray = new int[array.length];
         for (int i = 0; i < array.length; i++) {
-            newArray[i] = (int)Math.round(array[i] * c);
+            newArray[i] = (int) Math.round(array[i] * c);
         }
         return newArray;
     }
