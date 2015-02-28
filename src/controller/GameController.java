@@ -31,10 +31,10 @@ public class GameController {
     private static int prevMouseY;
     private static boolean isAllSnapped;
     private static int level = 1;
-    private static final int MAX_LEVEL = 2;
+    private static final int nbOfLevels = FileUtils.getNbOfLevelFiles();
 
     public static boolean isNotLastLevel() {
-        return level < MAX_LEVEL;
+        return level < nbOfLevels;
     }
     
     public static int getLevel() {
