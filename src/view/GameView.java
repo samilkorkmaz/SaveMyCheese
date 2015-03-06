@@ -102,7 +102,7 @@ public class GameView extends JPanel {
             }
             isPause = !isPause;
             if (isPause) {
-                jbStartPause.setText("Pause");
+                jbStartPause.setText("Pause");                
             } else {
                 jbStartPause.setText("Continue");
             }
@@ -137,7 +137,7 @@ public class GameView extends JPanel {
 
     public static void initLevel() {
         GameController.start();
-        CanvasPanel.resetMap();
+        CanvasPanel.reset();
 
         jlSuccessFail.setOpaque(false);
         jlSuccessFail.setText("");

@@ -67,7 +67,10 @@ public class MouseThread extends Thread {
 
     public double getImageRotation_rad() {
         return imageRotation_rad;
-
+    }
+    
+    public void setPrevImageRotation_rad(double prevImageRotation_rad) {
+        this.prevImageRotation_rad = prevImageRotation_rad;
     }
 
     /**
@@ -155,13 +158,11 @@ public class MouseThread extends Thread {
     }
 
     public RectRowCol getActivePoint() {
-        RectRowCol rc = new RectRowCol();
-        rc.rowIndex = iActiveRow;
-        rc.colIndex = iActiveCol;
-        return rc;
+        return new RectRowCol(iActiveRow, iActiveCol);
     }
 
     public void updatePath() {
+        System.out.println("iActiveRow = " + iActiveRow + ", iActiveCol = " + iActiveCol);
         Node startNode = new Node(null, iActiveRow, iActiveCol);
         Node endNode = new Node(null, CanvasPanel.CHEESE_IROW, CanvasPanel.CHEESE_ICOL);
         setActivePoint(startNode.getRowIndex(), startNode.getColIndex());
@@ -205,17 +206,29 @@ public class MouseThread extends Thread {
     }
 
     public static RectRowCol getRowCol(MyRectangle rect) {
-        RectRowCol rectRowCol = new RectRowCol();
         int i1D = mapCellList.indexOf(rect);
-        rectRowCol.colIndex = i1D % N_MAP_COLS;
-        rectRowCol.rowIndex = (i1D - rectRowCol.colIndex) / N_MAP_COLS;
-        return rectRowCol;
+        int colIndex = i1D % N_MAP_COLS;
+        int rowIndex = (i1D - colIndex) / N_MAP_COLS;
+        return new RectRowCol(rowIndex, colIndex);
     }
 
     public static class RectRowCol {
 
-        public int rowIndex;
-        public int colIndex;
+        private int rowIndex;
+        private int colIndex;
+
+        public int getRowIndex() {
+            return rowIndex;
+        }
+
+        public int getColIndex() {
+            return colIndex;
+        }
+
+        public RectRowCol(int rowIndex, int colIndex) {
+            this.rowIndex = rowIndex;
+            this.colIndex = colIndex;
+        }
     }
 
     @Override
@@ -243,7 +256,23 @@ public class MouseThread extends Thread {
                 throw new IllegalArgumentException("dx/dy zero. Decrease nDivisions!");
             }
             double currentImageRotation_rad = Math.atan2(dyNode, dxNode) - Math.PI / 2;
-            double dRotation_rad = (currentImageRotation_rad - prevImageRotation_rad) / nDivisions;
+            double dRotationTemp_rad = currentImageRotation_rad - prevImageRotation_rad;
+            double dRotation_rad;
+            //decide shortest rotation direction:
+            if (dRotationTemp_rad > 0) {
+                if (dRotationTemp_rad < Math.PI) {
+                    dRotation_rad = dRotationTemp_rad;
+                } else {
+                    dRotation_rad = 2 * Math.PI - dRotationTemp_rad;
+                }
+            } else {
+                if (dRotationTemp_rad < -Math.PI) {
+                    dRotation_rad = 2 * Math.PI + dRotationTemp_rad;
+                } else {
+                    dRotation_rad = dRotationTemp_rad;
+                }
+            }
+            double rotationInc_rad = 1 * dRotation_rad / nDivisions;
 
             for (int iDiv = 0; iDiv < nDivisions && keepRunning; iDiv++) {
                 if (isBusy) {
@@ -256,7 +285,7 @@ public class MouseThread extends Thread {
                     }
                 }
                 //linear interpolation of mouse rotation and position between two nodes
-                imageRotation_rad = prevImageRotation_rad + iDiv * dRotation_rad;
+                imageRotation_rad = prevImageRotation_rad + iDiv * rotationInc_rad;
                 setActivePointXY(currentNodeX + iDiv * dx, currentNodeY + iDiv * dy);
                 try {
                     Thread.sleep(SLEEP_TIME_MS);

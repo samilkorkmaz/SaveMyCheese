@@ -32,6 +32,11 @@ public class GameController {
     private static boolean isAllSnapped;
     private static int level = 1;
     private static final int nbOfLevels = FileUtils.getNbOfLevelFiles();
+    private static boolean isPaused;
+    
+    public static boolean isPaused() {
+        return isPaused;
+    }
 
     public static boolean isNotLastLevel() {
         return level < nbOfLevels;
@@ -64,18 +69,6 @@ public class GameController {
         CanvasPanel.setGameOver(false);
         polygonList.clear();
         snapPolygonList.clear();
-
-        /*addToList(new int[]{110, 157, 174, 157, 110, 127}, new int[]{90, 90, 126, 162, 162, 126}, 351, 67 + 120, 1);
-         addToList(new int[]{110, 134, 215, 238}, new int[]{90, 43 + 94, 43 + 94, 90}, 270, 139 + 120, 1);
-         addToList(new int[]{110, 134, 215, 238}, new int[]{90, 43, 43, 90}, 270, 20 + 120, 1);
-         addToList(new int[]{110, 157, 140, 157, 110, 93}, new int[]{90, 90, 126, 162, 162, 126}, 253, 67 + 120, 1);*/
-        
-        /*addToList(new int[]{310, 309, 125, 197, 244, 199}, new int[]{486, 533, 674, 446, 434, 568}, 241, 258, 0.5);
-        addToList(new int[]{376, 422, 495, 310, 309, 420}, new int[]{434, 446, 674, 533, 486, 568}, 333, 258, 0.5);
-        addToList(new int[]{244, 197, 10, 239, 268, 133}, new int[]{434, 446, 306, 306, 351, 348}, 184, 194, 0.5);
-        addToList(new int[]{352, 380, 607, 422, 375, 486}, new int[]{351, 307, 305, 446, 434, 349}, 355, 194, 0.5);
-        addToList(new int[]{268, 240, 309, 380, 350, 309}, new int[]{351, 306, 78, 306, 351, 216}, 300, 80, 0.5);*/
-
         List<PolygonData> pdList = getPolygonDataFromFile(getPolygonFileForCurrentLevel());
         for (PolygonData pd : pdList) {
             addToList(pd.xArray, pd.yArray, pd.xStart, pd.yStart, pd.scale);
@@ -83,10 +76,12 @@ public class GameController {
     }
 
     public static void pause() {
+        isPaused = true;
         CanvasPanel.pauseAllThreads();
     }
 
     public static void continueGame() {
+        isPaused = false;
         CanvasPanel.continueAllThreads();
     }
 
