@@ -14,9 +14,6 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 import javax.swing.JPanel;
 import model.Map2D;
 import model.MouseThread;
@@ -24,6 +21,7 @@ import model.MyRectangle;
 import model.Node;
 
 /**
+ * Canvas on which map, cheese, puzzle pieces and mice are drawn. It is a component of GameView.
  *
  * @author Samil Korkmaz
  * @date January 2015
@@ -46,21 +44,9 @@ public class CanvasPanel extends JPanel {
     private static final Color PATH_COLOR = Color.ORANGE;
     private static final Color CURRENT_NODE_COLOR = Color.RED;
 
-    public static final int CHEESE_IROW = 24;//18;
-    public static final int CHEESE_ICOL = 30;//14;
-
-    private static final int N_MOUSE_THREAD = 3;
-    private static int counterThread = 0;
-    private static final List<MouseThread> mouseThreadList = new ArrayList<>();
     private static Image mouseImage;
     private static int mouseImageHalfWidth;
     private static int mouseImageHalfHeight;
-    private static boolean isGameOver = false;
-    private static final List<MouseThread.RectRowCol> startPointList = new ArrayList<>();
-
-    public static void setGameOver(boolean inIsGameOver) {
-        isGameOver = inIsGameOver;
-    }
 
     public static void refreshDrawing() {
         if (instance != null) {
@@ -89,8 +75,8 @@ public class CanvasPanel extends JPanel {
     }
 
     private void drawPaths(Graphics2D g2) {
-        for (int i = 0; i < mouseThreadList.size(); i++) {
-            MouseThread mouseThread = mouseThreadList.get(i);
+        for (int i = 0; i < GameController.getMouseThreadList().size(); i++) {
+            MouseThread mouseThread = GameController.getMouseThreadList().get(i);
             for (Node pathNode : mouseThread.getPath()) {
                 MyRectangle pathCell = MouseThread.getMapCellList().get(get1DIndex(pathNode.getRowIndex(), pathNode.getColIndex()));
                 MouseThread.RectRowCol activePathPoint = mouseThread.getActivePoint();
@@ -151,7 +137,7 @@ public class CanvasPanel extends JPanel {
                 g2.setColor(WALL_COLOR);
             }
             MouseThread.RectRowCol rc = MouseThread.getRowCol(rect);
-            if (rc.getRowIndex() == CHEESE_IROW && rc.getColIndex() == CHEESE_ICOL) {
+            if (rc.getRowIndex() == GameController.CHEESE_IROW && rc.getColIndex() == GameController.CHEESE_ICOL) {
                 g2.setColor(CHEESE_COLOR);
             }
             g2.fill(rect);
@@ -166,123 +152,13 @@ public class CanvasPanel extends JPanel {
         }
         return instance;
     }
-
-    public static void pauseAllThreads() {
-        MouseThread.setIsBusy(true);
+    
+    public static int getPanelWidth() {
+        return instance.getBounds().width;
     }
-
-    public static void continueAllThreads() {
-        MouseThread.setIsBusy(false);
-        for (MouseThread mouseThread : mouseThreadList) {
-            synchronized (mouseThread.getLock()) {
-                mouseThread.getLock().notify();
-            }
-        }
-    }
-
-    private static void killAllThreads() {
-        for (MouseThread mouseThread : mouseThreadList) {
-            mouseThread.setKeepRunning(false); //kill thread
-        }
-    }
-
-    public static void updateMapAndPaths(Shape shape) {
-        killAllThreads();
-        if (!GameController.isAllSnapped()) { //do not do the following if all is snapped because it causes the success message to lag
-            MouseThread.updateMap(shape);
-            List<MouseThread.RectRowCol> prevActivePointList = new ArrayList<>();
-            List<Double> prevImageRotationList_rad = new ArrayList<>();
-            for (MouseThread mouseThread : mouseThreadList) {
-                MouseThread.RectRowCol prevActivePoint = mouseThread.getActivePoint();
-                prevActivePointList.add(prevActivePoint);
-                double prevImageRotation_rad = mouseThread.getImageRotation_rad();
-                prevImageRotationList_rad.add(prevImageRotation_rad);
-            }
-            mouseThreadList.clear();
-            for (int i = 0; i < N_MOUSE_THREAD; i++) {
-                MouseThread mouseThread = new MouseThread(counterThread++);
-                mouseThreadList.add(mouseThread);
-                MouseThread.RectRowCol prevActivePoint = prevActivePointList.get(i);
-                mouseThread.setActivePoint(prevActivePoint);
-                double prevImageRotation_rad = prevImageRotationList_rad.get(i);
-                mouseThread.setPrevImageRotation_rad(prevImageRotation_rad);
-
-                mouseThread.updatePath();
-                mouseThread.start();
-            }
-        }
-        instance.repaint();
-    }
-
-    public static void onMouseReachedCheese() {
-        for (MouseThread mouseThread : mouseThreadList) {
-            mouseThread.setKeepRunning(false); //kill thread
-        }
-        setGameOver(true);
-        GameView.setLevelFail();
-    }
-
-    public static void reset() {
-        startPointList.clear();
-        MouseThread.resetMap();
-        for (MouseThread mouseThread : mouseThreadList) {
-            mouseThread.setKeepRunning(false); //kill thread
-        }
-        mouseThreadList.clear();
-        for (int i = 0; i < N_MOUSE_THREAD; i++) {
-            MouseThread mouseThread = new MouseThread(counterThread++);
-            mouseThreadList.add(mouseThread);
-            mouseThread.setActivePoint(getRandomCell());
-            mouseThread.updatePath();
-            mouseThread.start();
-        }
-        instance.repaint();
-    }
-
-    private static boolean isInStartPointList(MouseThread.RectRowCol rc) {
-        boolean isInStartPointList = false;
-        for (MouseThread.RectRowCol rcInList : startPointList) {
-            if (rcInList.getRowIndex() == rc.getRowIndex() && rcInList.getColIndex() == rc.getColIndex()) {
-                isInStartPointList = true;
-                break;
-            }
-        }
-        return isInStartPointList;
-    }
-
-    private static MouseThread.RectRowCol getRandomCell() {
-        MouseThread.RectRowCol rc;
-        int radius = Math.min(CHEESE_IROW, CHEESE_ICOL);
-        int x0 = CHEESE_ICOL;
-        int y0 = CHEESE_IROW;
-        int counter = 0;
-        while (true) {
-            double angle_rad = Math.toRadians(30 * new Random().nextInt(12));
-            int iRow = y0 + (int) Math.round(radius * Math.cos(angle_rad));
-            int iCol = x0 + (int) Math.round(radius * Math.sin(angle_rad));
-            rc = new MouseThread.RectRowCol(iRow, iCol);
-            if (!isInStartPointList(rc)) {
-                startPointList.add(rc);
-                break;
-            }
-            if (counter++ > 100) { //infinite loop prevention
-                throw new RuntimeException("while loop taking too many iterations!");
-            }
-        }
-        //rc = new MouseThread.RectRowCol(5, 5);
-        //rc = new MouseThread.RectRowCol(35, 35);
-        return rc;
-    }
-
-    private static void createMouseListAndStart(int width, int height) {
-        MouseThread.createMap(width, height);
-        for (int i = 0; i < N_MOUSE_THREAD; i++) {
-            MouseThread mt = new MouseThread(counterThread++);
-            mouseThreadList.add(mt);
-            mt.setActivePoint(getRandomCell());
-            mt.updatePath();
-            mt.start();
-        }
+    
+    public static int getPanelHeight() {
+        return instance.getBounds().height;
     }
 
     private CanvasPanel(int x, int y, int width, int height) {
@@ -290,7 +166,7 @@ public class CanvasPanel extends JPanel {
         mouseImage = MouseThread.getMouseImage();
         mouseImageHalfWidth = mouseImage.getWidth(null) / 2;
         mouseImageHalfHeight = mouseImage.getHeight(null) / 2;
-        createMouseListAndStart(width, height);
+        GameController.createMouseListAndStart(width, height);
         setBounds(x, y, width, height);
         setLayout(null);
         setBackground(BACKGROUND_COLOR);
@@ -312,7 +188,8 @@ public class CanvasPanel extends JPanel {
         @Override
         public void mouseDragged(MouseEvent evt) {
             if (!GameController.isPaused()) { //prevent puzzle piece movement when game is paused
-                if (!isGameOver && mouseIsInCanvas(evt)) {
+            //if (true) {
+                if (!GameController.isGameOver() && mouseIsInCanvas(evt)) {
                     GameController.moveShape(evt.getX(), evt.getY());
                 }
             }

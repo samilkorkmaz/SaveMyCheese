@@ -1,5 +1,6 @@
 package model;
 
+import controller.GameController;
 import java.awt.Color;
 import java.awt.Image;
 import java.awt.Point;
@@ -55,7 +56,6 @@ public class MouseThread extends Thread {
     public static void setIsBusy(boolean inIsBusy) {
         isBusy = inIsBusy;
     }
-    
 
     public static int getRectWidth() {
         return rectWidth;
@@ -75,7 +75,6 @@ public class MouseThread extends Thread {
 
     /**
      * Image source: http://free.clipartof.com/details/57-Free-Cartoon-Gray-Field-Mouse-Clipart-Illustration
-     * @return 
      */
     public static Image getMouseImage() {
         if (mouseImage == null) {
@@ -150,7 +149,6 @@ public class MouseThread extends Thread {
         iActiveRow = iRow;
         iActiveCol = iCol;
         setActivePointXY(iCol * rectWidth, iRow * rectHeight);
-        CanvasPanel.refreshDrawing();
     }
 
     public void setActivePoint(RectRowCol rc) {
@@ -164,7 +162,7 @@ public class MouseThread extends Thread {
     public void updatePath() {
         System.out.println("iActiveRow = " + iActiveRow + ", iActiveCol = " + iActiveCol);
         Node startNode = new Node(null, iActiveRow, iActiveCol);
-        Node endNode = new Node(null, CanvasPanel.CHEESE_IROW, CanvasPanel.CHEESE_ICOL);
+        Node endNode = new Node(null, GameController.CHEESE_IROW, GameController.CHEESE_ICOL);
         setActivePoint(startNode.getRowIndex(), startNode.getColIndex());
         this.path = new AStarPathFinder().calcPath(mapArray2D, startNode, endNode);
     }
@@ -239,7 +237,7 @@ public class MouseThread extends Thread {
         for (int iPath = path.size() - 2; iPath >= 1 && keepRunning; iPath--) {
             if (iPath == 1) {
                 //mouse reached cheese, game over
-                CanvasPanel.onMouseReachedCheese();
+                GameController.onMouseReachedCheese();
             }
             setActivePoint(currentNode.getRowIndex(), currentNode.getColIndex());
             int currentNodeX = currentNode.getColIndex() * rectWidth;
@@ -272,7 +270,7 @@ public class MouseThread extends Thread {
                     dRotation_rad = dRotationTemp_rad;
                 }
             }
-            double rotationInc_rad = 1 * dRotation_rad / nDivisions;
+            double rotationInc_rad = dRotation_rad / nDivisions;
 
             for (int iDiv = 0; iDiv < nDivisions && keepRunning; iDiv++) {
                 if (isBusy) {

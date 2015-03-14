@@ -1,12 +1,11 @@
 package model;
 
 import java.awt.Point;
-import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Shape;
 
 /**
- * Rectangle that knows if it is inside a given polygon.
+ * Rectangle that knows if it is inside a given shape.
  *
  * @author Samil Korkmaz
  * @date February 2015

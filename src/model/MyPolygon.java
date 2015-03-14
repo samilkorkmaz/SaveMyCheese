@@ -12,26 +12,9 @@ public class MyPolygon extends Polygon {
     private boolean isSnapped;
     private static final int SNAP_TOLERANCE = 10;
 
-    public MyPolygon(int width, int height) {
-        this(getXCoords(width), getYCoords(height), getXCoords(width).length);
-    }
-
-    public MyPolygon(int[] xCoords, int[] yCoords, int nCoords) {
-        super(xCoords, yCoords, nCoords);
-        isSnapped = false;
-        //make sure that the smallest coordinate is zero:
-        setSmallestCoordinateToZero(super.xpoints);
-        setSmallestCoordinateToZero(super.ypoints);
-    }
-
-    private static int[] getXCoords(final int width) {
-        int[] xCoords = {0, width, width, 0};
-        return xCoords;
-    }
-
-    private static int[] getYCoords(final int height) {
-        int[] yCoords = {0, 0, height, height};
-        return yCoords;
+    public MyPolygon(int[] xCoords, int[] yCoords) {
+        super(xCoords, yCoords, xCoords.length);
+        isSnapped = false;      
     }
 
     private void setSmallestCoordinateToZero(int[] array) {
@@ -40,8 +23,26 @@ public class MyPolygon extends Polygon {
             array[i] = array[i] - minValue;
         }
     }
+    
+    public void setSmallestXToZero() {
+        setSmallestCoordinateToZero(xpoints);
+    }
+    
+    public void setSmallestYToZero() {
+        setSmallestCoordinateToZero(ypoints);
+    }
 
-    private int minOfArray(final int[] array) {
+    public static int maxOfArray(final int[] array) {
+        int maxValue = Integer.MIN_VALUE;
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] > maxValue) {
+                maxValue = array[i];
+            }
+        }
+        return maxValue;
+    }
+    
+    public static int minOfArray(final int[] array) {
         int minValue = Integer.MAX_VALUE;
         for (int i = 0; i < array.length; i++) {
             if (array[i] < minValue) {

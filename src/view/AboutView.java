@@ -30,7 +30,7 @@ public class AboutView extends JPanel {
     private static AboutView instance;
     private static final JFrame frame = new JFrame("About - Save My Cheese");
     private static final JTextArea jtaInfo = new JTextArea("Save My Cheese version 0.2."
-            + "\nAuthor: Samil Korkmaz\nDate: February 2015"
+            + "\nAuthor: Samil Korkmaz\nDate: March 2015"
             + "\n\nMouse image: http://free.clipartof.com/details/57-Free-Cartoon-Gray-Field-Mouse-Clipart-Illustration");
     private static final String BLOG_URL = "http://samilkorkmaz.blogspot.com";
     private static final JButton jbBack = new JButton("Back");
@@ -63,7 +63,6 @@ public class AboutView extends JPanel {
 
     /**
      * Reference: http://stackoverflow.com/questions/527719/how-to-add-hyperlink-in-jlabel
-     * @param uri 
      */
     private static void open(URI uri) {
         if (Desktop.isDesktopSupported()) {

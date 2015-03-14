@@ -15,7 +15,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 /**
- * Game screen.
+ * Game window.
  *
  * @author Samil Korkmaz
  * @date January 2015
@@ -48,6 +48,7 @@ public class GameView extends JPanel {
     private static final String SUCCESS_TEXT = "Level %d completed successfully!";
     private static final String FAIL_TEXT = "Game over: Mouse ate the cheese!";
     private static final JLabel jlSuccessFail = new JLabel();
+    private static final JLabel jlLevel = new JLabel();
     private static boolean isPause = true;
 
     @Override
@@ -65,17 +66,24 @@ public class GameView extends JPanel {
                 frame.getContentPane().add(instance);
                 frame.pack();
                 frame.setLocationRelativeTo(null);
+                initLevel();
             } catch (IOException ex) {
                 Logger.getLogger(WelcomeView.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         frame.setVisible(true);
     }
+    
+    public static void setLevelNb(int level, int nbOfLevels) {
+        jlLevel.setText("Level: " + level + " / " + nbOfLevels);
+    }
 
     private GameView() {
         setLayout(null);
         jpCanvas = CanvasPanel.create(0, 0, (int) getPreferredSize().getWidth() - (BUTTON_PANEL_WIDTH + 10), (int) getPreferredSize().getHeight());
-        jpCanvas.add(jlSuccessFail);        
+        jpCanvas.add(jlSuccessFail);    
+        jlLevel.setBounds((int) getPreferredSize().getWidth() - (BUTTON_PANEL_WIDTH + 100), 10, 100, 20);
+        jpCanvas.add(jlLevel);
         
         add(jpCanvas);
         add(jpButtons);
@@ -115,6 +123,7 @@ public class GameView extends JPanel {
         jbNext.addActionListener((java.awt.event.ActionEvent evt) -> {
             System.out.println("next");
             GameController.incLevel();
+            
             initLevel();
         });
 
@@ -127,7 +136,7 @@ public class GameView extends JPanel {
             @Override
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 WelcomeView.makeVisible(true);
-            }
+            }        
         });
     }
 
@@ -137,8 +146,7 @@ public class GameView extends JPanel {
 
     public static void initLevel() {
         GameController.start();
-        CanvasPanel.reset();
-
+        setLevelNb(GameController.getLevel(), GameController.getNbOfLevels());
         jlSuccessFail.setOpaque(false);
         jlSuccessFail.setText("");
         jpCanvas.repaint();

@@ -1,11 +1,11 @@
 package savemycheese;
 
-import controller.GameController;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import view.WelcomeView;
 
 /**
+ * Main class of Save my Cheese game.
  *
  * @author Samil Korkmaz
  * @date January 2015
@@ -14,10 +14,7 @@ import view.WelcomeView;
 public class Main {
 
     public static void main(String[] args) throws URISyntaxException, IOException {
-        GameController.start();
         WelcomeView.createAndShowGUI();
     }
-
-    
 
 }

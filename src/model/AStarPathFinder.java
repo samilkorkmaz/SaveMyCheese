@@ -19,16 +19,10 @@ public class AStarPathFinder {
 
     public static final int WALL = 0;
     public static final int OPEN = 1;
-    private final List<Node> path = new ArrayList<>();
     private static final int SIMPLE_MOVEMENT_COST = 10; //cost when moving horizontal or vertical
     private static final int DIAGONAL_MOVEMENT_COST = 14;
     private final List<Node> openList = new ArrayList<>();
     private final List<Node> closedList = new ArrayList<>();
-    private boolean pathFound;
-
-    public boolean isPathFound() {
-        return pathFound;
-    }
 
     /**
      * Calculates path nodes from end to start using A* algorithm.
@@ -40,11 +34,11 @@ public class AStarPathFinder {
     public List<Node> calcPath(int[][] map, Node startNode, Node endNode) {
         openList.clear();
         closedList.clear();
-        path.clear();
+        List<Node> path = new ArrayList<>();
         path.add(endNode);
         openList.add(startNode);
         Node currentNode = startNode;
-        pathFound = false;
+        boolean pathFound = false;
         if (!isEndNode(startNode, endNode)) { //start and end nodes are different points
             while (true) {
                 currentNode = getLowestCostNodeFromOpenList();
