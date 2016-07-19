@@ -24,6 +24,10 @@ public class MyRectangle extends Rectangle {
         return pathType;
     }
     
+    public boolean isOpen() {
+        return pathType == AStarPathFinder.OPEN;
+    }
+    
     public void setPathType(int pathType) {
         this.pathType = pathType;
     }

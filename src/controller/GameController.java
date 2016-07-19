@@ -12,7 +12,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import model.MouseThread;
+import model.Map2D;
+import model.MyMouse;
 import model.MyPolygon;
 import view.CanvasPanel;
 import view.GameView;
@@ -27,104 +28,58 @@ import view.WelcomeView;
  */
 public class GameController {
 
+    private static final int SLEEP_TIME_MS = 32 * 50;
     private static final List<MyPolygon> polygonList = new ArrayList<>();
     private static final List<MyPolygon> snapPolygonList = new ArrayList<>();
     private static MyPolygon selectedPolygon = null;
     private static MyPolygon selectedSnapPolygon = null;
     private static int prevMouseX;
     private static int prevMouseY;
-    private static boolean isAllSnapped;
+    private static boolean isAllPuzzlePiecesPlaced;
     private static int level = 1;
     private static final int nbOfLevels = FileUtils.getNbOfLevelFiles();
     private static boolean isPaused;
     private static boolean isGameOver = false;
-    private static final List<MouseThread> mouseThreadList = new ArrayList<>();
-    private static final int N_MOUSE_THREAD = 3;
-    private static int counterThread = 0;
-    private static final List<MouseThread.RectRowCol> startPointList = new ArrayList<>();
+    private static final List<MyMouse> myMouseList = new ArrayList<>();
+    private static final int N_MOUSE = 3;
+    private static final List<MyMouse.RectRowCol> startPointList = new ArrayList<>();
     public static final int CHEESE_IROW = 24;
     public static final int CHEESE_ICOL = 30;
     private static int allPolyXTranslation;
     private static int allPolyYTranslation;
 
-    public static List<MouseThread> getMouseThreadList() {
-        return mouseThreadList;
-    }
-
-    public static void continueAllThreads() {
-        MouseThread.setIsBusy(false);
-        for (MouseThread mouseThread : mouseThreadList) {
-            synchronized (mouseThread.getLock()) {
-                mouseThread.getLock().notify();
-            }
-        }
-    }
-
-    public static void killAllThreads() {
-        for (MouseThread mouseThread : mouseThreadList) {
-            mouseThread.setKeepRunning(false); //kill thread
-        }
+    public static List<MyMouse> getMyMouseList() {
+        return myMouseList;
     }
 
     public static void updateMapAndPaths(Shape shape) {
-        GameController.killAllThreads();
-        if (!GameController.isAllSnapped()) { //do not do the following if all is snapped because it causes the success message to lag
-            MouseThread.updateMap(shape);
-            List<MouseThread.RectRowCol> prevActivePointList = new ArrayList<>();
-            List<Double> prevImageRotationList_rad = new ArrayList<>();
-            for (MouseThread mouseThread : GameController.getMouseThreadList()) {
-                MouseThread.RectRowCol prevActivePoint = mouseThread.getActivePoint();
-                prevActivePointList.add(prevActivePoint);
-                double prevImageRotation_rad = mouseThread.getImageRotation_rad();
-                prevImageRotationList_rad.add(prevImageRotation_rad);
-            }
-            GameController.getMouseThreadList().clear();
-            for (int i = 0; i < N_MOUSE_THREAD; i++) {
-                MouseThread mouseThread = new MouseThread(counterThread++);
-                GameController.getMouseThreadList().add(mouseThread);
-                MouseThread.RectRowCol prevActivePoint = prevActivePointList.get(i);
-                mouseThread.setActivePoint(prevActivePoint);
-                double prevImageRotation_rad = prevImageRotationList_rad.get(i);
-                mouseThread.setPrevImageRotation_rad(prevImageRotation_rad);
-
-                mouseThread.updatePath();
-                mouseThread.start();
-            }
-        }
+        Map2D.updateMap(shape);
+        GameController.getMyMouseList().stream().forEach((myMouse) -> {
+            myMouse.calcPathToCheese();
+        });
         CanvasPanel.refreshDrawing();
     }
 
-    public static void pauseAllThreads() {
-        MouseThread.setIsBusy(true);
-    }
-
     public static void onMouseReachedCheese() {
-        for (MouseThread mouseThread : mouseThreadList) {
-            mouseThread.setKeepRunning(false); //kill thread
-        }
+        myMouseList.stream().forEach((myMouse) -> {
+            myMouse.setKeepRunning(false);
+        });
         GameController.setGameOver(true);
     }
 
     public static void reset() {
         startPointList.clear();
-        MouseThread.resetMap();
-        for (MouseThread mouseThread : mouseThreadList) {
-            mouseThread.setKeepRunning(false); //kill thread
-        }
-        mouseThreadList.clear();
-        for (int i = 0; i < N_MOUSE_THREAD; i++) {
-            MouseThread mouseThread = new MouseThread(counterThread++);
-            mouseThreadList.add(mouseThread);
-            mouseThread.setActivePoint(getRandomCell());
-            mouseThread.updatePath();
-            mouseThread.start();
-        }
+        MyMouse.resetMap();
+        myMouseList.stream().forEach((myMouse) -> {
+            myMouse.setKeepRunning(false);
+        });
+        myMouseList.clear();
         CanvasPanel.refreshDrawing();
     }
 
-    private static boolean isInStartPointList(MouseThread.RectRowCol rc) {
+    private static boolean isInStartPointList(MyMouse.RectRowCol rc) {
         boolean isInStartPointList = false;
-        for (MouseThread.RectRowCol rcInList : startPointList) {
+        for (MyMouse.RectRowCol rcInList : startPointList) {
             if (rcInList.getRowIndex() == rc.getRowIndex() && rcInList.getColIndex() == rc.getColIndex()) {
                 isInStartPointList = true;
                 break;
@@ -133,8 +88,8 @@ public class GameController {
         return isInStartPointList;
     }
 
-    private static MouseThread.RectRowCol getRandomCell() {
-        MouseThread.RectRowCol rc;
+    private static MyMouse.RectRowCol getRandomCell() {
+        MyMouse.RectRowCol rc;
         int radius = Math.min(CHEESE_IROW, CHEESE_ICOL);
         int x0 = CHEESE_ICOL;
         int y0 = CHEESE_IROW;
@@ -143,7 +98,7 @@ public class GameController {
             double angle_rad = Math.toRadians(30 * new Random().nextInt(12));
             int iRow = y0 + (int) Math.round(radius * Math.cos(angle_rad));
             int iCol = x0 + (int) Math.round(radius * Math.sin(angle_rad));
-            rc = new MouseThread.RectRowCol(iRow, iCol);
+            rc = new MyMouse.RectRowCol(iRow, iCol);
             if (!isInStartPointList(rc)) {
                 startPointList.add(rc);
                 break;
@@ -153,17 +108,6 @@ public class GameController {
             }
         }
         return rc;
-    }
-
-    public static void createMouseListAndStart(int width, int height) {
-        MouseThread.createMap(width, height);
-        for (int i = 0; i < N_MOUSE_THREAD; i++) {
-            MouseThread mt = new MouseThread(counterThread++);
-            mouseThreadList.add(mt);
-            mt.setActivePoint(getRandomCell());
-            mt.updatePath();
-            mt.start();
-        }
     }
 
     public static void setGameOver(boolean isGameOver) {
@@ -184,7 +128,7 @@ public class GameController {
     public static boolean isNotLastLevel() {
         return level < nbOfLevels;
     }
-    
+
     public static int getNbOfLevels() {
         return nbOfLevels;
     }
@@ -260,36 +204,74 @@ public class GameController {
     private static Point calcSnapCenterTranslation(List<PolygonData> pdList, double scaleFactor) {
         Point minMaxX = calcScaledMinMaxX(pdList, scaleFactor);
         Point minMaxY = calcScaledMinMaxY(pdList, scaleFactor);
-        int cheeseX = CHEESE_ICOL * MouseThread.getRectWidth();
-        int cheeseY = CHEESE_IROW * MouseThread.getRectHeight();
+        int cheeseX = CHEESE_ICOL * Map2D.getRectWidth();
+        int cheeseY = CHEESE_IROW * Map2D.getRectHeight();
         int xTranslation = cheeseX - (int) Math.round((minMaxX.y + minMaxX.x) / 2.0);
         int yTranslation = cheeseY - (int) Math.round((minMaxY.y + minMaxY.x) / 2.0);
         return new Point(xTranslation, yTranslation);
     }
 
-    public static void start() {
+    public static void start() {        
         setGameOver(false);
+        isAllPuzzlePiecesPlaced = false;
         polygonList.clear();
         snapPolygonList.clear();
         List<PolygonData> pdList = getPolygonDataFromFile(getPolygonFileForCurrentLevel());
         double scaleFactor = calcScaleFactor(pdList);
         Point pSnapCenterTranslation = calcSnapCenterTranslation(pdList, scaleFactor);
-        for (PolygonData pd : pdList) {
+        pdList.stream().forEach((pd) -> {
             int[] scaledXCoords = multiplyArray(pd.xArray, scaleFactor);
             int[] scaledYCoords = multiplyArray(pd.yArray, scaleFactor);
             addToList(scaledXCoords, scaledYCoords, pSnapCenterTranslation.x, pSnapCenterTranslation.y);
-        }
+        });
         reset();
+        for (int i = 0; i < N_MOUSE; i++) {
+            MyMouse myMouse = new MyMouse(i);
+            GameController.getMyMouseList().add(myMouse);
+            myMouse.setActivePoint(getRandomCell());
+            myMouse.calcPathToCheese(); //Create initial path to cheese
+        }
+
+        new Thread(() -> {
+            boolean exitThread = false;
+            double t0_ms = getTime_ms();
+            while (!exitThread && !GameController.getMyMouseList().isEmpty()) { //Had to add isEmpty() check because otherwise when player presses restart button, the previous thread stays alive which causes the timer to be triggered more than once at the same time
+                /*NOTE: The following sleep(1) was meant to decrease CPU load but it causes the current thread to stay alive when moving to next level. Investigate this.
+                 try {
+                 Thread.sleep(1); //to prevent excessive CPU load
+                 } catch (InterruptedException ex) {
+                 Logger.getLogger(MyMouse.class.getName()).log(Level.SEVERE, null, ex);
+                 }*/
+                double t1_ms = getTime_ms();
+                if (t1_ms - t0_ms >= SLEEP_TIME_MS) {
+                    if (!isPaused()) {
+                        //System.out.printf("t1_ms - t0_ms = %1.1f\n", t1_ms - t0_ms);
+                        for (MyMouse myMouse : GameController.getMyMouseList()) {
+                            if (myMouse.getKeepRunning()) {
+                                myMouse.moveAlongPathToCheese();
+                            } else {
+                                exitThread = true;
+                                break;
+                            }
+                        }
+                        CanvasPanel.refreshDrawing();
+                    }
+                    t0_ms = t1_ms;
+                }
+            }
+        }).start();
+    }
+
+    public static double getTime_ms() {
+        return 1e-6 * System.nanoTime();
     }
 
     public static void pause() {
         isPaused = true;
-        pauseAllThreads();
     }
 
     public static void continueGame() {
         isPaused = false;
-        continueAllThreads();
     }
 
     public static void deselectShape() {
@@ -319,19 +301,22 @@ public class GameController {
         }
     }
 
-    public static boolean isAllSnapped() {
-        return isAllSnapped;
+    public static boolean isAllPuzzlePiecesPlaced() {
+        return isAllPuzzlePiecesPlaced;
     }
 
-    private static void checkAllSnapped() {
-        isAllSnapped = true;
+    private static void checkAllPuzzlePiecesPlaced() {
+        isAllPuzzlePiecesPlaced = true;
         for (MyPolygon myPolygon : polygonList) {
             if (!myPolygon.isSnapped()) {
-                isAllSnapped = false;
+                isAllPuzzlePiecesPlaced = false;
                 break;
             }
         }
-        if (isAllSnapped) {
+        if (isAllPuzzlePiecesPlaced) {
+            myMouseList.stream().forEach((myMouse) -> {
+                myMouse.setKeepRunning(false); //to end game loop thread in start().
+            });
             GameView.setLevelSuccess();
         }
     }
@@ -344,7 +329,7 @@ public class GameController {
             boolean isSnapped = selectedPolygon.isCloseTo(selectedSnapPolygon);
             selectedPolygon.setIsSnapped(isSnapped);
             if (isSnapped) {
-                checkAllSnapped();
+                checkAllPuzzlePiecesPlaced();
                 updateMapAndPaths(selectedPolygon);
             }
         } else {

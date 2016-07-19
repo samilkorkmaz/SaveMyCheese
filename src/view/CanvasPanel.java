@@ -1,6 +1,5 @@
 package view;
 
-import controller.GameController;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -15,8 +14,10 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
+
+import controller.GameController;
 import model.Map2D;
-import model.MouseThread;
+import model.MyMouse;
 import model.MyRectangle;
 import model.Node;
 
@@ -38,15 +39,11 @@ public class CanvasPanel extends JPanel {
     private static final Color BACKGROUND_COLOR = Color.GREEN;
 
     private static final Color OPEN_PATH_COLOR = BACKGROUND_COLOR;
-    private static final Color WALL_COLOR = new Color(0, 0, 0, 0); //alpha = 0: Transparent, 255: Opaque
+    private static final Color WALL_COLOR = new Color(0, 0, 0, 0); //alpha = 0: Transparent, alpha = 255: Opaque
     private static final Color MAP_GRID_COLOR = Color.LIGHT_GRAY;
     private static final Color CHEESE_COLOR = Color.YELLOW;
     private static final Color PATH_COLOR = Color.ORANGE;
     private static final Color CURRENT_NODE_COLOR = Color.RED;
-
-    private static Image mouseImage;
-    private static int mouseImageHalfWidth;
-    private static int mouseImageHalfHeight;
 
     public static void refreshDrawing() {
         if (instance != null) {
@@ -75,11 +72,11 @@ public class CanvasPanel extends JPanel {
     }
 
     private void drawPaths(Graphics2D g2) {
-        for (int i = 0; i < GameController.getMouseThreadList().size(); i++) {
-            MouseThread mouseThread = GameController.getMouseThreadList().get(i);
-            for (Node pathNode : mouseThread.getPath()) {
-                MyRectangle pathCell = MouseThread.getMapCellList().get(get1DIndex(pathNode.getRowIndex(), pathNode.getColIndex()));
-                MouseThread.RectRowCol activePathPoint = mouseThread.getActivePoint();
+        for (int i = 0; i < GameController.getMyMouseList().size(); i++) {
+            MyMouse myMouse = GameController.getMyMouseList().get(i);
+            for (Node pathNode : myMouse.getPath()) {
+                MyRectangle pathCell = Map2D.getMapCellList().get(get1DIndex(pathNode.getRowIndex(), pathNode.getColIndex()));
+                MyMouse.RectRowCol activePathPoint = myMouse.getActivePoint();
                 if (pathNode.getRowIndex() == activePathPoint.getRowIndex() && pathNode.getColIndex() == activePathPoint.getColIndex()) {
                     g2.setColor(CURRENT_NODE_COLOR);
                 } else {
@@ -87,17 +84,17 @@ public class CanvasPanel extends JPanel {
                 }
                 g2.draw(pathCell);
             }
-            Point ap = mouseThread.getActivePointXY();
-
+            Point ap = myMouse.getActivePointXY();
             // Rotation information
+            int mouseImageHalfWidth = MyMouse.getMouseImage().getWidth(null) / 2;
+            int mouseImageHalfHeight = MyMouse.getMouseImage().getHeight(null) / 2;
             double locationX = mouseImageHalfWidth;
             double locationY = mouseImageHalfHeight;
-            AffineTransform tx = AffineTransform.getRotateInstance(mouseThread.getImageRotation_rad(), locationX, locationY);
+            AffineTransform tx = AffineTransform.getRotateInstance(myMouse.getImageRotation_rad(), locationX, locationY);
             AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
-
             // Drawing the rotated image at the required drawing locations
-            g2.drawImage(op.filter(toBufferedImage(mouseImage), null), ap.x - mouseImageHalfWidth + MouseThread.getRectWidth() / 2,
-                    ap.y - mouseImageHalfHeight + MouseThread.getRectHeight() / 2, null);
+            g2.drawImage(op.filter(toBufferedImage(MyMouse.getMouseImage()), null), ap.x - mouseImageHalfWidth + Map2D.getRectWidth() / 2,
+                    ap.y - mouseImageHalfHeight + Map2D.getRectHeight() / 2, null);
         }
     }
 
@@ -112,10 +109,8 @@ public class CanvasPanel extends JPanel {
         if (img instanceof BufferedImage) {
             return (BufferedImage) img;
         }
-
         // Create a buffered image with transparency
         BufferedImage bimage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
-
         // Draw the image on to the buffered image
         Graphics2D bGr = bimage.createGraphics();
         bGr.drawImage(img, 0, 0, null);
@@ -126,17 +121,17 @@ public class CanvasPanel extends JPanel {
     }
 
     private int get1DIndex(int iRow, int iCol) {
-        return iRow * MouseThread.N_MAP_COLS + iCol;
+        return iRow * Map2D.N_MAP_COLS + iCol;
     }
 
     private void drawMap(Graphics2D g2) {
-        for (MyRectangle rect : MouseThread.getMapCellList()) {
-            if (rect.getPathType() == Map2D.OPEN) {
+        for (MyRectangle rect : Map2D.getMapCellList()) {
+            if (rect.isOpen()) {
                 g2.setColor(OPEN_PATH_COLOR);
             } else {
                 g2.setColor(WALL_COLOR);
             }
-            MouseThread.RectRowCol rc = MouseThread.getRowCol(rect);
+            MyMouse.RectRowCol rc = Map2D.getRowCol(rect);
             if (rc.getRowIndex() == GameController.CHEESE_IROW && rc.getColIndex() == GameController.CHEESE_ICOL) {
                 g2.setColor(CHEESE_COLOR);
             }
@@ -152,21 +147,18 @@ public class CanvasPanel extends JPanel {
         }
         return instance;
     }
-    
+
     public static int getPanelWidth() {
         return instance.getBounds().width;
     }
-    
+
     public static int getPanelHeight() {
         return instance.getBounds().height;
     }
 
     private CanvasPanel(int x, int y, int width, int height) {
-        super();
-        mouseImage = MouseThread.getMouseImage();
-        mouseImageHalfWidth = mouseImage.getWidth(null) / 2;
-        mouseImageHalfHeight = mouseImage.getHeight(null) / 2;
-        GameController.createMouseListAndStart(width, height);
+        super();        
+        Map2D.createMap(width, height);
         setBounds(x, y, width, height);
         setLayout(null);
         setBackground(BACKGROUND_COLOR);
@@ -188,13 +180,11 @@ public class CanvasPanel extends JPanel {
         @Override
         public void mouseDragged(MouseEvent evt) {
             if (!GameController.isPaused()) { //prevent puzzle piece movement when game is paused
-            //if (true) {
                 if (!GameController.isGameOver() && mouseIsInCanvas(evt)) {
                     GameController.moveShape(evt.getX(), evt.getY());
                 }
             }
             repaint();
-
         }
 
         @Override

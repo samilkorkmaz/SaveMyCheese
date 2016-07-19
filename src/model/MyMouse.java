@@ -4,7 +4,6 @@ import controller.GameController;
 import java.awt.Color;
 import java.awt.Image;
 import java.awt.Point;
-import java.awt.Shape;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.awt.image.FilteredImageSource;
@@ -12,12 +11,10 @@ import java.awt.image.ImageFilter;
 import java.awt.image.ImageProducer;
 import java.awt.image.RGBImageFilter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
-import view.CanvasPanel;
 import view.WelcomeView;
 
 /**
@@ -27,48 +24,27 @@ import view.WelcomeView;
  * @date January 2015
  * @license Public Domain
  */
-public class MouseThread extends Thread {
+public class MyMouse {
 
+    private int iPath;
+    private Node currentNode;
+    private Node nextNode;
     private static final double DOUBLE_TOLERANCE = 1e-15;
-    private boolean keepRunning = true;
-    public static final int N_MAP_ROWS = 50;
-    public static final int N_MAP_COLS = 60;
-    private static final int SLEEP_TIME_MS = 2*50;
+    private boolean keepRunning = true;    
     private List<Node> path; //starts from endNode and ends at startNode
-    private static int[][] mapArray2D;
-    private static final List<MyRectangle> mapCellList = new ArrayList<>();
+
     private int iActiveRow = 0;
     private int iActiveCol = 0;
     private final Point activePoint = new Point();
-    private final int iThread;
-    private static BufferedImage mouseImage;
-    private static int rectHeight;
-    private static int rectWidth;
+    private static Image mouseImage;
+
     private double imageRotation_rad;
     private double prevImageRotation_rad = 0;
-    private static boolean isBusy = false;
-    private final Object lock = new Object();
-    
-    public Object getLock() {
-        return lock;
-    }
-    
-    public static void setIsBusy(boolean inIsBusy) {
-        isBusy = inIsBusy;
-    }
-
-    public static int getRectWidth() {
-        return rectWidth;
-    }
-
-    public static int getRectHeight() {
-        return rectHeight;
-    }
 
     public double getImageRotation_rad() {
         return imageRotation_rad;
     }
-    
+
     public void setPrevImageRotation_rad(double prevImageRotation_rad) {
         this.prevImageRotation_rad = prevImageRotation_rad;
     }
@@ -79,25 +55,24 @@ public class MouseThread extends Thread {
     public static Image getMouseImage() {
         if (mouseImage == null) {
             try {
-                mouseImage = ImageIO.read(MouseThread.class.getResource(WelcomeView.IMAGE_DIR + "Mouse.png"));
+                mouseImage = makeColorTransparent(ImageIO.read(MyMouse.class.getResource(WelcomeView.IMAGE_DIR + "Mouse.png")), Color.WHITE);
             } catch (IOException ex) {
-                Logger.getLogger(MouseThread.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(MyMouse.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        return makeColorTransparent(mouseImage, Color.WHITE);
+        return mouseImage;
     }
 
     /**
      * Make provided image transparent wherever color matches the provided color.<br/>
      *
-     * Reference:
-     * http://www.javaworld.com/article/2074105/core-java/making-white-image-backgrounds-transparent-with-java-2d-groovy.html
+     * Reference: http://www.javaworld.com/article/2074105/core-java/making-white-image-backgrounds-transparent-with-java-2d-groovy.html
      *
      * @param im BufferedImage whose color will be made transparent.
      * @param color Color in provided image which will be made transparent.
      * @return Image with transparency applied.
      */
-    public static Image makeColorTransparent(final BufferedImage im, final Color color) {
+    private static Image makeColorTransparent(final BufferedImage im, final Color color) {
         final ImageFilter filter = new RGBImageFilter() {
             // the color we are looking for (white)... Alpha bits are set to opaque
             public int markerRGB = color.getRGB() | 0xFFFFFFFF;
@@ -117,10 +92,6 @@ public class MouseThread extends Thread {
         return Toolkit.getDefaultToolkit().createImage(ip);
     }
 
-    public static List<MyRectangle> getMapCellList() {
-        return mapCellList;
-    }
-
     public List<Node> getPath() {
         return path;
     }
@@ -129,16 +100,18 @@ public class MouseThread extends Thread {
         this.keepRunning = keepRunning;
     }
 
-    public MouseThread(int iThread) {
+    public boolean getKeepRunning() {
+        return keepRunning;
+    }
+
+    public MyMouse(int iMouse) {
         super();
-        this.iThread = iThread;
-        System.out.println(iThread + ". mouse thread created.");
+        System.out.println(iMouse + ". mouse created.");
     }
 
     private void setActivePointXY(int x, int y) {
         activePoint.x = x;
         activePoint.y = y;
-        CanvasPanel.refreshDrawing();
     }
 
     public Point getActivePointXY() {
@@ -148,7 +121,7 @@ public class MouseThread extends Thread {
     public void setActivePoint(int iRow, int iCol) {
         iActiveRow = iRow;
         iActiveCol = iCol;
-        setActivePointXY(iCol * rectWidth, iRow * rectHeight);
+        setActivePointXY(iCol * Map2D.getRectWidth(), iRow * Map2D.getRectHeight());
     }
 
     public void setActivePoint(RectRowCol rc) {
@@ -159,55 +132,24 @@ public class MouseThread extends Thread {
         return new RectRowCol(iActiveRow, iActiveCol);
     }
 
-    public void updatePath() {
+    public void calcPathToCheese() {
         System.out.println("iActiveRow = " + iActiveRow + ", iActiveCol = " + iActiveCol);
         Node startNode = new Node(null, iActiveRow, iActiveCol);
         Node endNode = new Node(null, GameController.CHEESE_IROW, GameController.CHEESE_ICOL);
         setActivePoint(startNode.getRowIndex(), startNode.getColIndex());
-        this.path = new AStarPathFinder().calcPath(mapArray2D, startNode, endNode);
-    }
-
-    public static void createMap(int width, int height) {
-        mapArray2D = Map2D.create(N_MAP_ROWS, N_MAP_COLS);
-        rectHeight = height / N_MAP_ROWS;
-        rectWidth = width / N_MAP_COLS;
-        for (int iRow = 0; iRow < N_MAP_ROWS; iRow++) {
-            for (int iCol = 0; iCol < N_MAP_COLS; iCol++) {
-                MyRectangle cell = new MyRectangle(iCol * rectWidth, iRow * rectHeight, rectWidth, rectHeight, mapArray2D[iRow][iCol]);
-                mapCellList.add(cell);
-            }
-        }
+        this.path = new AStarPathFinder().calcPath(Map2D.getMapArray2D(), startNode, endNode);
+        currentNode = path.get(path.size() - 1);
+        nextNode = path.get(path.size() - 2);
+        iPath = path.size() - 1;
     }
 
     public static void resetMap() {
-        for (int iRow = 0; iRow < N_MAP_ROWS; iRow++) {
-            for (int iCol = 0; iCol < N_MAP_COLS; iCol++) {
-                mapArray2D[iRow][iCol] = Map2D.OPEN;
-                mapCellList.get(iRow * N_MAP_ROWS + iCol).setPathType(Map2D.OPEN);
+        for (int iRow = 0; iRow < Map2D.N_MAP_ROWS; iRow++) {
+            for (int iCol = 0; iCol < Map2D.N_MAP_COLS; iCol++) {
+                Map2D.getMapArray2D()[iRow][iCol] = AStarPathFinder.OPEN;
+                Map2D.getMapCellList().get(iRow * Map2D.N_MAP_ROWS + iCol).setPathType(AStarPathFinder.OPEN);
             }
         }
-    }
-
-    /**
-     * Turn the map cells under the shape to walls.
-     *
-     * @param shape
-     */
-    public static void updateMap(Shape shape) {
-        for (MyRectangle cell : mapCellList) {
-            if (cell.isInShape(shape)) {
-                RectRowCol rectRowCol = getRowCol(cell);
-                mapArray2D[rectRowCol.rowIndex][rectRowCol.colIndex] = Map2D.WALL;
-                cell.setPathType(Map2D.WALL);
-            }
-        }
-    }
-
-    public static RectRowCol getRowCol(MyRectangle rect) {
-        int i1D = mapCellList.indexOf(rect);
-        int colIndex = i1D % N_MAP_COLS;
-        int rowIndex = (i1D - colIndex) / N_MAP_COLS;
-        return new RectRowCol(rowIndex, colIndex);
     }
 
     public static class RectRowCol {
@@ -229,23 +171,26 @@ public class MouseThread extends Thread {
         }
     }
 
-    @Override
-    public void run() {
-        int nDivisions = 10;
-        Node currentNode = path.get(path.size() - 1);
-        Node nextNode = path.get(path.size() - 2);
-        for (int iPath = path.size() - 2; iPath >= 1 && keepRunning; iPath--) {
-            if (iPath == 1) {
+    public static boolean isEqualDoubles(double d1, double d2) {
+        return Math.abs(d2 - d1) <= DOUBLE_TOLERANCE;
+    }
+
+    public void moveAlongPathToCheese() {
+        iPath--;
+        if (iPath <= 1) {
+            if (!GameController.isAllPuzzlePiecesPlaced()) {
                 //mouse reached cheese, game over
                 GameController.onMouseReachedCheese();
             }
+        } else {
             setActivePoint(currentNode.getRowIndex(), currentNode.getColIndex());
-            int currentNodeX = currentNode.getColIndex() * rectWidth;
-            int currentNodeY = currentNode.getRowIndex() * rectHeight;
-            int nextNodeX = nextNode.getColIndex() * rectWidth;
-            int nextNodeY = nextNode.getRowIndex() * rectHeight;
+            int currentNodeX = currentNode.getColIndex() * Map2D.getRectWidth();
+            int currentNodeY = currentNode.getRowIndex() * Map2D.getRectHeight();
+            int nextNodeX = nextNode.getColIndex() * Map2D.getRectWidth();
+            int nextNodeY = nextNode.getRowIndex() * Map2D.getRectHeight();
             double dxNode = nextNodeX - currentNodeX;
             double dyNode = nextNodeY - currentNodeY;
+            int nDivisions = 10;
             int dx = (int) Math.round(dxNode / nDivisions);
             int dy = (int) Math.round(dyNode / nDivisions);
             if (dx == 0 && dy == 0) {
@@ -272,34 +217,15 @@ public class MouseThread extends Thread {
             }
             double rotationInc_rad = dRotation_rad / nDivisions;
 
-            for (int iDiv = 0; iDiv < nDivisions && keepRunning; iDiv++) {
-                if (isBusy) {
-                    synchronized(lock) {
-                        try {
-                            lock.wait();
-                        } catch (InterruptedException ex) {
-                            Logger.getLogger(MouseThread.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    }
-                }
+            for (int iDiv = 0; iDiv < nDivisions; iDiv++) {
                 //linear interpolation of mouse rotation and position between two nodes
                 imageRotation_rad = prevImageRotation_rad + iDiv * rotationInc_rad;
-                setActivePointXY(currentNodeX + iDiv * dx, currentNodeY + iDiv * dy);
-                try {
-                    Thread.sleep(SLEEP_TIME_MS);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(MouseThread.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                setActivePointXY(currentNodeX + iDiv * dx, currentNodeY + iDiv * dy);                
             }
             currentNode = nextNode;
             nextNode = path.get(iPath - 1);
             prevImageRotation_rad = currentImageRotation_rad;
         }
-        System.out.println("END: " + iThread + ". mouse thread ended.");
-    }
-    
-    public static boolean isEqualDoubles(double d1, double d2) {
-        return Math.abs(d2-d1) <= DOUBLE_TOLERANCE;
     }
 
 }

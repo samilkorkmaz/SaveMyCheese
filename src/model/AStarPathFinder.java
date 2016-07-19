@@ -17,8 +17,8 @@ import java.util.List;
  */
 public class AStarPathFinder {
 
-    public static final int WALL = 0;
-    public static final int OPEN = 1;
+    static final int WALL = 0;
+    static final int OPEN = 1;
     private static final int SIMPLE_MOVEMENT_COST = 10; //cost when moving horizontal or vertical
     private static final int DIAGONAL_MOVEMENT_COST = 14;
     private final List<Node> openList = new ArrayList<>();
