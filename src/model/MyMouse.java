@@ -174,13 +174,28 @@ public class MyMouse {
     public static boolean isEqualDoubles(double d1, double d2) {
         return Math.abs(d2 - d1) <= DOUBLE_TOLERANCE;
     }
+    
+    private boolean hasReachedCheese() {
+        int currentNodeX = currentNode.getColIndex() * Map2D.getRectWidth();
+        int currentNodeY = currentNode.getRowIndex() * Map2D.getRectHeight();
+        int cheeseX = GameController.CHEESE_ICOL * Map2D.getRectWidth();
+        int cheeseY = GameController.CHEESE_IROW * Map2D.getRectHeight();
+        double distanceToCheese = Math.hypot(currentNodeX-cheeseX, currentNodeY-cheeseY);
+        System.out.printf("rectWidth: %d, rectHeight: %d, distanceToCheese: %1.0f", Map2D.getRectWidth(), 
+                Map2D.getRectHeight(), distanceToCheese);
+        return distanceToCheese <= 2.1*Math.max(Map2D.getRectWidth(), Map2D.getRectHeight());
+    }
 
     public void moveAlongPathToCheese() {
         iPath--;
-        if (iPath <= 1) {
+        if (iPath <= 1) { //There is no path left. Can have two reasons: 1.Cheese is reached 2.There is no path to the cheese, i.e. all cells surrounding the mouse are walls (happens when a puzzle piece is dropped on top of a mouse).
             if (!GameController.isAllPuzzlePiecesPlaced()) {
-                //mouse reached cheese, game over
-                GameController.onMouseReachedCheese();
+                if (hasReachedCheese()) {
+                    //mouse reached cheese, game over
+                    GameController.onMouseReachedCheese();
+                } else {
+                    //No path to cheese. Do nothing, stay where you are
+                }
             }
         } else {
             setActivePoint(currentNode.getRowIndex(), currentNode.getColIndex());
