@@ -6,3 +6,5 @@ Desktop game where you try to prevent mice from getting to the cheese by blockin
 Created with Netbeans and jdk8 on a windows8 PC.
 
 Technologies used: A* path finding algorithm, multi threading
+
+For details, see <a href="http://samilkorkmaz.blogspot.com.tr/2016/11/algorithms-in-save-my-cheese.html">my blog post</a>.
